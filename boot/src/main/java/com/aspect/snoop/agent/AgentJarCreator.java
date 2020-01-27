@@ -52,7 +52,7 @@ public class AgentJarCreator {
       "swing-worker-1.1.jar",
       "xom-1.1.jar",
       "rsyntaxtextarea.jar",
-      "xstream-1.3.1.jar"
+      "xstream-1.4.6.jar"
     };
 
     private static Log logger = LogFactory.getLog(AgentJarCreator.class);
