@@ -1,8 +1,8 @@
 package com.aspect.snoop.plugin;
 
 import com.aspect.snoop.plugin.jeb.JebNetPostHandler;
-import com.fuzhu8.inspector.Inspector;
 import com.fuzhu8.inspector.plugin.AbstractPlugin;
+import com.fuzhu8.inspector.plugin.Appender;
 import com.fuzhu8.inspector.plugin.Plugin;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -16,8 +16,8 @@ import java.io.IOException;
 
 public class ExamplePlugin extends AbstractPlugin implements Plugin {
 
-    public ExamplePlugin(Inspector inspector) {
-        super(inspector);
+    public ExamplePlugin(Appender appender) {
+        super(appender);
 
         System.out.println("Initialize example jeb plugin");
     }
@@ -28,13 +28,13 @@ public class ExamplePlugin extends AbstractPlugin implements Plugin {
             CtMethod[] methods = clazz.getDeclaredMethods("post");
             for (CtMethod method : methods) {
                 if (method.getParameterTypes().length == 4) {
-                    inspector.println("Hook method=" + method);
-                    return XposedBridge.hookMethod(method, new JebNetPostHandler(inspector));
+                    appender.out_println("Hook method=" + method);
+                    return XposedBridge.hookMethod(method, new JebNetPostHandler(appender));
                 }
             }
         } else if ("com.pnfsoftware.jeb.util.base.Flags".equals(clazz.getName())) {
             CtMethod method = clazz.getDeclaredMethod("has");
-            return XposedHookBuilder.createBuilder(clazz, inspector).hook(method, new XC_MethodHook() {
+            return XposedHookBuilder.createBuilder(clazz, appender).hook(method, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     super.afterHookedMethod(param);
@@ -42,7 +42,7 @@ public class ExamplePlugin extends AbstractPlugin implements Plugin {
                     if (value == 0x10) {
                         param.setResult(Boolean.TRUE); // disable require internet
                     }
-                    inspector.println("Flags.has(0x" + Integer.toHexString(value) + ") => " + param.getResult());
+                    appender.out_println("Flags.has(0x" + Integer.toHexString(value) + ") => " + param.getResult());
                 }
             }).build();
         }

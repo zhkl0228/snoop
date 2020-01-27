@@ -1,6 +1,6 @@
 package de.robv.android.xposed;
 
-import com.fuzhu8.inspector.Inspector;
+import com.fuzhu8.inspector.plugin.Appender;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -10,16 +10,16 @@ import java.io.IOException;
 
 public class XposedHookBuilder implements HookBuilder {
 
-    public static HookBuilder createBuilder(CtClass ctClass, Inspector inspector) {
-        return new XposedHookBuilder(ctClass, inspector);
+    public static HookBuilder createBuilder(CtClass ctClass, Appender appender) {
+        return new XposedHookBuilder(ctClass, appender);
     }
 
     private final CtClass cc;
-    private final Inspector inspector;
+    private final Appender appender;
 
-    private XposedHookBuilder(CtClass ctClass, Inspector inspector) {
+    private XposedHookBuilder(CtClass ctClass, Appender appender) {
         this.cc = ctClass;
-        this.inspector = inspector;
+        this.appender = appender;
     }
 
     @Override
@@ -29,14 +29,14 @@ public class XposedHookBuilder implements HookBuilder {
         }
 
         XposedBridge.hookMethod(cc, method, callback);
-        inspector.println("Hook method: " + method);
+        appender.out_println("Hook method: " + method);
         return this;
     }
 
     @Override
     public byte[] build() throws CannotCompileException, IOException {
         byte[] newByteCode = cc.toBytecode();
-        if(inspector.isDebug()) {
+        if(appender.isDebug()) {
             cc.writeFile(System.getProperty("user.home") + "/.snoop/tmp");
         }
         return newByteCode;

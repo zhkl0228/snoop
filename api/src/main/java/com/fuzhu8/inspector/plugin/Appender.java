@@ -1,4 +1,4 @@
-package com.fuzhu8.inspector.io;
+package com.fuzhu8.inspector.plugin;
 
 /**
  * appender
@@ -13,5 +13,7 @@ public interface Appender {
     void err_println(Object msg);
 
     void printStackTrace(Throwable throwable);
+
+    boolean isDebug();
 
 }

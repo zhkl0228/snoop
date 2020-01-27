@@ -1,6 +1,7 @@
 package com.fuzhu8.inspector;
 
 import com.fuzhu8.inspector.bytecode.DexFileManager;
+import com.fuzhu8.inspector.plugin.Appender;
 import com.fuzhu8.inspector.plugin.Plugin;
 import com.fuzhu8.inspector.plugin.PluginClassFileTransformer;
 import com.fuzhu8.inspector.script.LuaScriptManager;
@@ -88,7 +89,7 @@ public class DefaultModuleContext implements ModuleContext {
 		}
 	}
 
-	private void discoverPlugin(Inspector inspector, File jar) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+	private void discoverPlugin(Appender appender, File jar) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 		try (JarFile jarFile = new JarFile(jar)) {
 			JarEntry entry = jarFile.getJarEntry("META-INF/MANIFEST.MF");
 			if (entry == null) {
@@ -102,11 +103,11 @@ public class DefaultModuleContext implements ModuleContext {
 								jar.toURI().toURL()
 						}, classLoader);
 						Class<?> pluginClass = loader.loadClass(pluginClassName);
-						Constructor<?> constructor = pluginClass.getDeclaredConstructor(Inspector.class);
+						Constructor<?> constructor = pluginClass.getDeclaredConstructor(Appender.class);
 						constructor.setAccessible(true);
-						Plugin plugin = (Plugin) constructor.newInstance(inspector);
-						instrumentation.addTransformer(new PluginClassFileTransformer(inspector, plugin));
-						inspector.println("Discover plugins: " + plugin);
+						Plugin plugin = (Plugin) constructor.newInstance(appender);
+						instrumentation.addTransformer(new PluginClassFileTransformer(appender, plugin));
+						appender.out_println("Discover plugins: " + plugin);
 					}
 				}
 			}

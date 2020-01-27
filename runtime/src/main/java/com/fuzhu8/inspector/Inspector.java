@@ -5,8 +5,9 @@ import java.nio.ByteBuffer;
 
 import com.fuzhu8.inspector.completer.ServerCommandCompleter;
 import com.fuzhu8.inspector.io.InspectCache;
+import com.fuzhu8.inspector.plugin.Appender;
 
-public interface Inspector extends Runnable {
+public interface Inspector extends Runnable, Appender {
 
 	void println(Object msg);
 	

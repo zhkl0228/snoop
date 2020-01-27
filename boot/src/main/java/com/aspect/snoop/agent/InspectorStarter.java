@@ -1,22 +1,20 @@
 package com.aspect.snoop.agent;
 
-import java.io.File;
-import java.lang.instrument.Instrumentation;
-
 import com.fuzhu8.inspector.DefaultModuleContext;
 import com.fuzhu8.inspector.Inspector;
 import com.fuzhu8.inspector.ModuleContext;
 import com.fuzhu8.inspector.bytecode.DexFileManager;
 import com.fuzhu8.inspector.script.LuaScriptManager;
-import com.fuzhu8.inspector.xposed.SSLTrustKiller;
 import com.fuzhu8.inspector.xposed.XposedDexFileManager;
 import com.fuzhu8.inspector.xposed.XposedInspector;
 import com.fuzhu8.inspector.xposed.XposedLoadLibraryFake;
 import com.fuzhu8.inspector.xposed.XposedLuaScriptManager;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
-
 import de.robv.android.xposed.XposedBridge;
+
+import java.io.File;
+import java.lang.instrument.Instrumentation;
 
 /**
  * @author zhkl0228
@@ -31,8 +29,7 @@ class InspectorStarter {
 		}
 
     	ModuleContext context = new DefaultModuleContext(tmpDir, SnoopAgent.class.getClassLoader(), new File(libraryPath), instrumentation);
-    	new SSLTrustKiller(context);
-    	
+
     	new XposedLoadLibraryFake(context);
 		
 		DexFileManager dexFileManager = new XposedDexFileManager(context);

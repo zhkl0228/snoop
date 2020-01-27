@@ -1,6 +1,5 @@
 package com.fuzhu8.inspector.plugin;
 
-import com.fuzhu8.inspector.Inspector;
 import javassist.ClassPool;
 import javassist.CtClass;
 
@@ -10,11 +9,11 @@ import java.security.ProtectionDomain;
 
 public class PluginClassFileTransformer implements ClassFileTransformer {
 
-    private final Inspector inspector;
+    private final Appender appender;
     private final Plugin plugin;
 
-    public PluginClassFileTransformer(Inspector inspector, Plugin plugin) {
-        this.inspector = inspector;
+    public PluginClassFileTransformer(Appender appender, Plugin plugin) {
+        this.appender = appender;
         this.plugin = plugin;
     }
 
@@ -31,8 +30,8 @@ public class PluginClassFileTransformer implements ClassFileTransformer {
                 return classData;
             }
         } catch (Exception e) {
-            inspector.inspect(classfileBuffer, "transform failed: className=" + className + ", loader=" + loader);
-            inspector.println(e);
+            appender.out_println("transform failed: className=" + className + ", loader=" + loader);
+            appender.printStackTrace(e);
         }
         return classfileBuffer;
     }

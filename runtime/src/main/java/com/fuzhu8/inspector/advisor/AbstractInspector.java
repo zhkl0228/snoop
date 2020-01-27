@@ -13,6 +13,7 @@ import com.fuzhu8.inspector.completer.ServerCommandCompleter;
 import com.fuzhu8.inspector.http.HttpUtils;
 import com.fuzhu8.inspector.io.Console;
 import com.fuzhu8.inspector.io.*;
+import com.fuzhu8.inspector.plugin.Appender;
 import com.fuzhu8.inspector.script.LuaScriptManager;
 import com.strobel.assembler.metadata.*;
 import com.strobel.decompiler.DecompilationOptions;

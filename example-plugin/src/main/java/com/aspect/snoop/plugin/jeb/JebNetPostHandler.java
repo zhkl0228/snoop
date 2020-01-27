@@ -1,6 +1,6 @@
 package com.aspect.snoop.plugin.jeb;
 
-import com.fuzhu8.inspector.Inspector;
+import com.fuzhu8.inspector.plugin.Appender;
 import de.robv.android.xposed.XC_MethodHook;
 import org.apache.commons.codec.binary.Hex;
 
@@ -8,10 +8,10 @@ import java.io.ByteArrayInputStream;
 
 public class JebNetPostHandler extends XC_MethodHook {
 
-    private final Inspector inspector;
+    private final Appender appender;
 
-    public JebNetPostHandler(Inspector inspector) {
-        this.inspector = inspector;
+    public JebNetPostHandler(Appender appender) {
+        this.appender = appender;
     }
 
     @Override
@@ -20,7 +20,7 @@ public class JebNetPostHandler extends XC_MethodHook {
         String host = (String) param.args[1];
         String data = (String) param.args[2];
         String response = (String) param.getResult();
-        inspector.println(new Exception("post host=" + host + ", data=" + data + ", response=" + response));
+        appender.out_println(new Exception("post host=" + host + ", data=" + data + ", response=" + response));
 
         if ("https://www.pnfsoftware.com/jps/checkupdate".equals(host) ||
                 "https://lise.pnfsoftware.com/jps/checkupdate".equals(host)) {
@@ -60,12 +60,12 @@ public class JebNetPostHandler extends XC_MethodHook {
             String osArch = Util.readUTF(dataIn);
             String osVersion = Util.readUTF(dataIn);
             String compName = Util.readUTF(dataIn);
-            inspector.inspect(data, "dumpRequest user_id=" + user_id + ", license_id=" + license_id + ", machine_id=" + machine_id +
+            appender.out_println("dumpRequest user_id=" + user_id + ", license_id=" + license_id + ", machine_id=" + machine_id +
                     ", build_type=0x" + Integer.toHexString(build_type) + ", version=" + (major + "." + minor + "." + buildId + "." + timestamp) +
                     ", startSeconds=" + startSeconds + ", classSecureMask=0b" + Integer.toBinaryString(classSecureMask) + ", random=" + random +
                     ", username=" + username + ", javaVendor=" + javaVendor + ", javaVersion=" + javaVersion +
                     ", osName=" + osName + ", osArch=" + osArch + ", osVersion=" + osVersion + ", compName=" + compName);
-            inspector.println("dumpRequest response=" + Util.decodeCheckUpdate(response));
+            appender.out_println("dumpRequest response=" + Util.decodeCheckUpdate(response));
         } catch(Exception ignored) {}
     }
 

@@ -1,6 +1,5 @@
 package com.fuzhu8.inspector.plugin;
 
-import com.fuzhu8.inspector.Inspector;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -9,16 +8,16 @@ import java.io.IOException;
 
 public abstract class AbstractPlugin implements Plugin {
 
-    protected final Inspector inspector;
+    protected final Appender appender;
 
-    public AbstractPlugin(Inspector inspector) {
-        this.inspector = inspector;
+    public AbstractPlugin(Appender appender) {
+        this.appender = appender;
     }
 
     @Override
     public byte[] onTransform(ClassLoader loader, CtClass clazz) throws NotFoundException, CannotCompileException, IOException {
-        if (inspector.isDebug()) {
-            inspector.println("onTransform loader=" + loader + ", class=" + clazz.getName());
+        if (appender.isDebug()) {
+            appender.out_println("onTransform loader=" + loader + ", class=" + clazz.getName());
         }
         return null;
     }
