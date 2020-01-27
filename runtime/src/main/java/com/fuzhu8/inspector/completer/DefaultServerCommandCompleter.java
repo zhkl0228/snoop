@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.fuzhu8.inspector.completer;
 
 import java.io.DataOutputStream;
@@ -20,7 +17,7 @@ public class DefaultServerCommandCompleter extends AbstractInspectCache implemen
 	
 	private final Inspector inspector;
 	private final String prefix;
-	private final Map<String, String[]> map = new HashMap<String, String[]>();
+	private final Map<String, String[]> map = new HashMap<>();
 
 	public DefaultServerCommandCompleter(Inspector inspector, String prefix) {
 		super(0x2002, true);
@@ -54,9 +51,9 @@ public class DefaultServerCommandCompleter extends AbstractInspectCache implemen
 
 	@Override
 	public String describeHelp() {
-		StringBuffer buffer = new StringBuffer();
-		for(String[] strs : map.values()) {
-			for(String str : strs) {
+		StringBuilder buffer = new StringBuilder();
+		for(String[] values : map.values()) {
+			for(String str : values) {
 				buffer.append(str).append('\n');
 			}
 		}

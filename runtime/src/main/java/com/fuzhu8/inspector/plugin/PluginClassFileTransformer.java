@@ -31,7 +31,7 @@ public class PluginClassFileTransformer implements ClassFileTransformer {
                 return classData;
             }
         } catch (Exception e) {
-            inspector.inspect(classfileBuffer, "transform failed: className=" + className + ", classBeingRedefined=" + classBeingRedefined + ", loader=" + loader);
+            inspector.inspect(classfileBuffer, "transform failed: className=" + className + ", loader=" + loader);
             inspector.println(e);
         }
         return classfileBuffer;

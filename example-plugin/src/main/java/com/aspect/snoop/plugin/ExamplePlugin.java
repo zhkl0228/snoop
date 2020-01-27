@@ -40,7 +40,7 @@ public class ExamplePlugin extends AbstractPlugin implements Plugin {
                     super.afterHookedMethod(param);
                     int value = (Integer) param.args[0];
                     if (value == 0x10) {
-                        param.setResult(Boolean.TRUE);
+                        param.setResult(Boolean.TRUE); // disable require internet
                     }
                     inspector.println("Flags.has(0x" + Integer.toHexString(value) + ") => " + param.getResult());
                 }

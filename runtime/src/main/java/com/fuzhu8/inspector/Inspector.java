@@ -29,13 +29,11 @@ public interface Inspector extends Runnable {
 	
 	/**
 	 * 应用dataDir
-	 * @return
 	 */
 	File getAppDataDir();
 	
 	/**
 	 * 模块lib目录
-	 * @return
 	 */
 	File getModuleLibDir();
 	
@@ -43,7 +41,6 @@ public interface Inspector extends Runnable {
 	
 	/**
 	 * 创建一个命令完成器
-	 * @param prefix
 	 * @return 返回的对象用commit提交
 	 */
 	ServerCommandCompleter createCommandCompleter(String prefix);

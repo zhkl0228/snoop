@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.robv.android.xposed.callbacks;
 
 import java.lang.reflect.Member;

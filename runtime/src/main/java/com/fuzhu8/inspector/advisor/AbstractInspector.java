@@ -115,7 +115,7 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 			formattingOptions.PlaceFinallyOnNewLine = false;
 			formattingOptions.PlaceWhileOnNewLine = false;
 			settings.setJavaFormattingOptions(formattingOptions);
-			List<ITypeLoader> typeLoaders = new ArrayList<ITypeLoader>();
+			List<ITypeLoader> typeLoaders = new ArrayList<>();
 			for(Class<?> clazz : dexFileManager.getLoadedClasses()) {
 				if(clazz.getName().startsWith(className)) {
 					byte[] bytes = dexFileManager.getClassBytes(clazz.getName());
@@ -345,7 +345,7 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 		writeToConsole(new LargeMessageCache(msg, false));
 	}
 	
-	private final Queue<InspectCache> cacheQueue = new LinkedBlockingQueue<InspectCache>();
+	private final Queue<InspectCache> cacheQueue = new LinkedBlockingQueue<>();
 	
 	@Override
 	public final void writeToConsole(InspectCache cache) {
@@ -589,7 +589,7 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 	public void listAllDevs() {
 		try {
 			Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
-			List<NetworkInterface> list = new ArrayList<NetworkInterface>();
+			List<NetworkInterface> list = new ArrayList<>();
 			while(enumeration.hasMoreElements()) {
 				NetworkInterface interface1 = enumeration.nextElement();
 				if(!interface1.isUp() ||

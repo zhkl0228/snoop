@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.robv.android.xposed;
 
 import de.robv.android.xposed.callbacks.XCMethodPointer;
@@ -12,12 +9,12 @@ import de.robv.android.xposed.callbacks.XCMethodPointer;
 public abstract class XC_MethodHookAlteration<T, E> extends XC_MethodHook {
 
 	@Override
-	protected final void beforeHookedMethod(MethodHookParam param) throws Throwable {
+	protected final void beforeHookedMethod(MethodHookParam param) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	protected final void afterHookedMethod(MethodHookParam param) throws Throwable {
+	protected final void afterHookedMethod(MethodHookParam param) {
 		throw new UnsupportedOperationException();
 	}
 	

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.fuzhu8.inspector.completer;
 
 /**

@@ -34,7 +34,7 @@ public abstract class XCallback implements Comparable<XCallback> {
 		}
 	}
 
-	public static final void callAll(Param param) {
+	public static void callAll(Param param) {
 		if (param.callbacks == null)
 			throw new IllegalStateException("This object was not created for use with callAll");
 
