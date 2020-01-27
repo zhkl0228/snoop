@@ -43,10 +43,10 @@ abstract class PluginSource {
      * @return a list of class
      * @throws Exception an exception that occurred during loading
      */
-    abstract Collection<Class<?>> load(ClassLoader parent) throws Exception;
+    abstract Collection<Class<?>> load() throws Exception;
 
-    final Collection<Plugin> loadPlugins(Appender appender, ClassLoader parent) throws Exception {
-        final Collection<Class<?>> pluginClasses = this.load(parent);
+    final Collection<Plugin> loadPlugins(Appender appender) throws Exception {
+        final Collection<Class<?>> pluginClasses = this.load();
         final Collection<Plugin> loaded = new ArrayList<>();
 
         if (pluginClasses.isEmpty()) {

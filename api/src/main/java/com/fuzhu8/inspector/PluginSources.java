@@ -44,8 +44,8 @@ class PluginSources {
      * @param pluginDirectoryPath the path to the directory where the JAR files are located
      * @return a list of loaded {@link Class} objects, never null
      */
-    static PluginSource jarSource(final String pluginDirectoryPath) {
-        return jarSource(URI.create(pluginDirectoryPath));
+    static PluginSource jarSource(final File pluginDirectoryPath, final ClassLoader parent) {
+        return jarSource(pluginDirectoryPath.toURI(), parent);
     }
 
     /**
@@ -54,10 +54,10 @@ class PluginSources {
      * @param pluginUri the {@link URI} to the directory where the JAR files are located
      * @return a list of loaded {@link Class} objects, never null
      */
-    static PluginSource jarSource(final URI pluginUri) {
+    private static PluginSource jarSource(final URI pluginUri, final ClassLoader parent) {
         return new PluginSource() {
             @Override
-            final Collection<Class<?>> load(ClassLoader parent) throws IOException, ClassNotFoundException {
+            final Collection<Class<?>> load() throws IOException, ClassNotFoundException {
                 final ArrayList<Class<?>> plugins = new ArrayList<>();
                 final Path path = Paths.get(pluginUri);
                 if (!Files.exists(path)) {
@@ -73,7 +73,7 @@ class PluginSources {
                         jarUrls.put(filePath, filePath.toUri().toURL());
                     }
                 }
-                final ClassLoader cl = new URLClassLoader(jarUrls.values().toArray(new URL[]{}), parent);
+                final ClassLoader loader = new URLClassLoader(jarUrls.values().toArray(new URL[]{}), parent);
                 for (Path jarPath: jarUrls.keySet()) {
                     final File file = jarPath.toAbsolutePath().toFile();
                     final JarFile jar = new JarFile(file);
@@ -84,7 +84,33 @@ class PluginSources {
                         }
                         String className = entry.getName().substring(0, entry.getName().length() - 6);
                         className = className.replace('/', '.');
-                        Class<?> clazz = Class.forName(className, true, cl);
+                        Class<?> clazz = Class.forName(className, true, loader);
+                        plugins.add(clazz);
+                    }
+                }
+                return plugins;
+            }
+        };
+
+    }
+
+    static PluginSource singleJarSource(final URI jarFile, final ClassNameFilter filter) {
+        return new PluginSource() {
+            @Override
+            final Collection<Class<?>> load() throws IOException, ClassNotFoundException {
+                final ArrayList<Class<?>> plugins = new ArrayList<>();
+                final ClassLoader loader = new URLClassLoader(new URL[] { jarFile.toURL() });
+                final Path path = Paths.get(jarFile);
+                final JarFile jar = new JarFile(path.toAbsolutePath().toFile());
+                for (Enumeration<JarEntry> entries = jar.entries(); entries.hasMoreElements();) {
+                    final JarEntry entry = entries.nextElement();
+                    if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
+                        continue;
+                    }
+                    String className = entry.getName().substring(0, entry.getName().length() - 6);
+                    className = className.replace('/', '.');
+                    if (filter.accept(className)) {
+                        Class<?> clazz = Class.forName(className, true, loader);
                         plugins.add(clazz);
                     }
                 }
@@ -103,7 +129,7 @@ class PluginSources {
     static PluginSource classList(final Class<?>... classes) {
         return new PluginSource() {
             @Override
-            final Collection<Class<?>> load(ClassLoader parent) {
+            final Collection<Class<?>> load() {
                 return new ArrayList<Class<?>>() {{
                     addAll(Arrays.asList(classes));
                 }};

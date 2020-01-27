@@ -60,9 +60,9 @@ public class DefaultModuleContext implements ModuleContext {
 	@Override
 	public void discoverPlugins(DexFileManager dexFileManager, Inspector inspector, LuaScriptManager scriptManager) {
 		File pluginDir = new File(libraryDir, "plugins");
-		PluginSource pluginSource = PluginSources.jarSource(pluginDir.toURI());
+		PluginSource pluginSource = PluginSources.jarSource(pluginDir, classLoader);
 		try {
-			for (Plugin plugin : pluginSource.loadPlugins(inspector, classLoader)) {
+			for (Plugin plugin : pluginSource.loadPlugins(inspector)) {
 				instrumentation.addTransformer(new PluginClassFileTransformer(inspector, plugin));
 				inspector.out_println("Discover plugin: " + plugin);
 			}
