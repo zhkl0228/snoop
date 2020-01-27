@@ -1,0 +1,4 @@
+# Project exclude paths
+/boot/target/
+/example-plugin/target/
+/runtime/target/
