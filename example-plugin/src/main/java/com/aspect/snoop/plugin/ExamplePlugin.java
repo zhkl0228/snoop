@@ -3,6 +3,7 @@ package com.aspect.snoop.plugin;
 import com.aspect.snoop.plugin.jeb.JebNetPostHandler;
 import com.fuzhu8.inspector.plugin.AbstractPlugin;
 import com.fuzhu8.inspector.plugin.Appender;
+import com.fuzhu8.inspector.plugin.InspectorPlugin;
 import com.fuzhu8.inspector.plugin.Plugin;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -14,6 +15,7 @@ import javassist.NotFoundException;
 
 import java.io.IOException;
 
+@InspectorPlugin
 public class ExamplePlugin extends AbstractPlugin implements Plugin {
 
     public ExamplePlugin(Appender appender) {
