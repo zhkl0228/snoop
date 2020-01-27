@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.fuzhu8.inspector.advisor;
 
 import com.alibaba.fastjson.JSON;
@@ -20,7 +17,7 @@ public abstract class AbstractAdvisor extends AbstractHookHandler implements Hoo
 	}
 
 	protected final void hook(Inspector inspector, String className, String methodName, String...args) {
-		StringBuffer script = new StringBuffer();
+		StringBuilder script = new StringBuilder();
 		script.append("hook(").append('"').append(className).append('"');
 		script.append(',').append('"').append(methodName).append('"');
 		for(String arg : args) {
@@ -51,8 +48,6 @@ public abstract class AbstractAdvisor extends AbstractHookHandler implements Hoo
 	
 	/**
 	 * 格式化json
-	 * @param json
-	 * @return
 	 */
 	public static String formatJson(String json) {
 		Object obj = JSON.parse(json);
