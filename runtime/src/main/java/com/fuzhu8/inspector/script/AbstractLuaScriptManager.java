@@ -74,7 +74,6 @@ public abstract class AbstractLuaScriptManager extends AbstractAdvisor
 	public final void registerAll(DexFileManager dexFileManager) throws LuaException {
 		registerFunction("log", new LogFunction(luaState, inspector));
 		registerFunction("where", new WhereFunction(luaState, inspector));
-		registerFunction("dc", new DiscoverClassLoaderFunction(luaState, inspector, dexFileManager));
 		registerFunction("bindClass", new BindClassFunction(luaState, inspector, dexFileManager));
 		registerFunction("newInstance", new NewInstanceFunction(luaState, inspector, dexFileManager));
 		

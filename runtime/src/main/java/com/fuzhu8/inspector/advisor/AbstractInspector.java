@@ -67,7 +67,6 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 		global = this.createCommandCompleter(null);
 		global.addCommandHelp("log", "log(msg); -- log to console");
 		global.addCommandHelp("where", "where(msg?); -- print the stack trace to console");
-		global.addCommandHelp("dc()", "dc(); -- discover runtime stack class loaders.");
 		global.addCommandHelp("hook", "hook(class, method, ..., callback?); -- hook api, method = '*' means all method.",
 				"hook(\"java.lang.String\", \"equalsIgnoreCase\", \"java.lang.String\", function(old, this, anotherString)",
 				"    local ret = old:invoke(this, anotherString);",
@@ -92,6 +91,8 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 
 		inspector.addCommandHelp("inspector:clearDnsCache()", "inspector:clearDnsCache(); -- clear dns cache");
 		inspector.addCommandHelp("inspector:listAllDnsCache()", "inspector:listAllDnsCache(); -- list all dns cache");
+
+		inspector.addCommandHelp("inspector:listAllDevs()", "inspector:listAllDevs(); -- list all iface");
 
 		inspector.addCommandHelp("inspector:lynx", "inspector:lynx(url); -- print url content.");
 		inspector.addCommandHelp("inspector:interrupt()", "inspector:interrupt() -- interrupt current worker thread.");
@@ -218,11 +219,6 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 	public void lynx(String url) throws IOException {
 		byte[] data = HttpUtils.sendGet(url);
 		inspect(data, url);
-	}
-
-	@SuppressWarnings("unused")
-	public void enableAutoCompleteClasses() {
-		throw new UnsupportedOperationException();
 	}
 
 	@SuppressWarnings("unused")
@@ -376,7 +372,7 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 		println("initialized inspector: " + (System.currentTimeMillis() - currentTimeMillis) + "ms.");
 		currentTimeMillis = System.currentTimeMillis();
 
-		ServerCommandCompleter completer = createCommandCompleter("inspector:decompile");
+		ServerCommandCompleter completer = createCommandCompleter("inspector:decompile(");
 		for(Class<?> clazz : dexFileManager.getLoadedClasses()) {
 			if(clazz.isAnnotation() || clazz.isAnonymousClass() || clazz.isArray() || clazz.isEnum() || clazz.isMemberClass() || clazz.isSynthetic()) {
 				continue;
@@ -386,6 +382,41 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 		}
 		completer.commit();
 		println("initialized decompile: " + (System.currentTimeMillis() - currentTimeMillis) + "ms.");
+
+		completer = createCommandCompleter("inspector:dumpMethod(");
+		for(Class<?> clazz : dexFileManager.getLoadedClasses()) {
+			if(clazz.isAnnotation() || clazz.isAnonymousClass() || clazz.isArray() || clazz.isEnum() || clazz.isMemberClass() || clazz.isSynthetic()) {
+				continue;
+			}
+			String str = clazz.getCanonicalName();
+			completer.addCommandHelp("inspector:dumpMethod(\"" + str + "\")", "inspector:dumpMethod(clazz); -- dump methods");
+		}
+		completer.commit();
+		println("initialized dumpMethod: " + (System.currentTimeMillis() - currentTimeMillis) + "ms.");
+		currentTimeMillis = System.currentTimeMillis();
+
+		completer = createCommandCompleter("inspector:dumpField(");
+		for(Class<?> clazz : dexFileManager.getLoadedClasses()) {
+			if(clazz.isAnnotation() || clazz.isAnonymousClass() || clazz.isArray() || clazz.isEnum() || clazz.isMemberClass() || clazz.isSynthetic()) {
+				continue;
+			}
+			String str = clazz.getCanonicalName();
+			completer.addCommandHelp("inspector:dumpField(\"" + str + "\")", "inspector:dumpField(clazz); -- dump fields");
+		}
+		completer.commit();
+		println("initialized dumpField: " + (System.currentTimeMillis() - currentTimeMillis) + "ms.");
+		currentTimeMillis = System.currentTimeMillis();
+
+		completer = createCommandCompleter(null);
+		for(Class<?> clazz : dexFileManager.getLoadedClasses()) {
+			if(clazz.isAnnotation() || clazz.isAnonymousClass() || clazz.isArray() || clazz.isEnum() || clazz.isMemberClass() || clazz.isSynthetic()) {
+				continue;
+			}
+			String str = clazz.getCanonicalName();
+			completer.addCommandHelp("hook(\"" + str + "\", ", "hook(class, method, ..., callback?); -- hook api, method = nil means constructor, method = '*' means all constructor and method.");
+		}
+		completer.commit();
+		println("initialized hook: " + (System.currentTimeMillis() - currentTimeMillis) + "ms.");
 	}
 
 	@Override
@@ -431,6 +462,34 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 	}
 
 	public void info() {
+		final String newLine = System.getProperty("line.separator");
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("Process ID: ");
+		sb.append(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
+		sb.append(newLine);
+		sb.append("Working directory: ");
+		sb.append(new File(".").getAbsolutePath());
+		sb.append(newLine);
+		sb.append("Classes loaded: ");
+		sb.append(dexFileManager.getLoadedClasses().size());
+		sb.append(newLine);
+		sb.append("System properties: ");
+		sb.append(newLine);
+		Properties p = System.getProperties();
+		Set<?> keySet = p.keySet();
+		for(Object obj : keySet) {
+			String key = (String) obj;
+			if ( "line.separator".equals(key) )
+				continue;
+			sb.append("   ");
+			sb.append(key);
+			sb.append("=");
+			sb.append(p.getProperty(key));
+			sb.append(newLine);
+		}
+		println(sb);
+
 		Runtime runtime = Runtime.getRuntime();
 		println("totalMemory: " + toMB(runtime.totalMemory()));
 		println("freeMemory: " + toMB(runtime.freeMemory()));

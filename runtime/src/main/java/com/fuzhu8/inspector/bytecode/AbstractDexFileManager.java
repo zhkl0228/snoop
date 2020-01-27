@@ -1,9 +1,16 @@
-/**
- * 
- */
 package com.fuzhu8.inspector.bytecode;
 
-import java.lang.reflect.InvocationTargetException;
+import cn.banny.utils.StringUtils;
+import com.fuzhu8.inspector.Inspector;
+import com.fuzhu8.inspector.ModuleContext;
+import com.fuzhu8.inspector.advisor.AbstractAdvisor;
+import com.fuzhu8.inspector.advisor.Hooker;
+import com.sun.jna.Pointer;
+import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
+import javassist.ClassPool;
+import javassist.CtClass;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
@@ -11,18 +18,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import com.fuzhu8.inspector.Inspector;
-import com.fuzhu8.inspector.ModuleContext;
-import com.fuzhu8.inspector.advisor.AbstractAdvisor;
-import com.fuzhu8.inspector.advisor.Hooker;
-import com.sun.jna.Pointer;
-
-import cn.banny.utils.StringUtils;
-import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
-import javassist.ClassPool;
-import javassist.CtClass;
 
 /**
  * @author zhkl0228
@@ -41,29 +36,10 @@ public abstract class AbstractDexFileManager<T> extends AbstractAdvisor implemen
 	public void setInspector(Inspector inspector) {
 		this.inspector = inspector;
 	}
-	
-	private final Set<ClassLoader> discoveredClassLoaders = new LinkedHashSet<ClassLoader>();
 
 	@Override
-	public final void discoverClassLoader() {
-		try {
-			Class<?> VMStack = Class.forName("dalvik.system.VMStack");
-			Class<?>[] classes = (Class<?>[]) XposedHelpers.callStaticMethod(VMStack, "getClasses", -1);
-			for(Class<?> clazz : classes) {
-				ClassLoader classLoader = clazz.getClassLoader();
-				if(discoveredClassLoaders.add(classLoader)) {
-					inspector.println("discoverClassLoader: " + classLoader);
-					notifyClassLoader(classLoader);
-				}
-			}
-		} catch(ClassNotFoundException e) {
-			inspector.println(e);
-		}
-	}
-
-	@Override
-	public String[] requestHookClasses(String classFilter) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		Set<String> hooked = new LinkedHashSet<String>();
+	public String[] requestHookClasses(String classFilter) {
+		Set<String> hooked = new LinkedHashSet<>();
 		for(Class<?> clazz : context.getInstrumentation().getAllLoadedClasses()) {
 			try {
 				String name = clazz.getCanonicalName();
@@ -129,11 +105,7 @@ public abstract class AbstractDexFileManager<T> extends AbstractAdvisor implemen
 	protected void executeHook() {
 	}
 	
-	protected boolean canHookDefineClass() {
-		return true;
-	}
-	
-	private final List<ClassLoaderListener> listeners = new ArrayList<ClassLoaderListener>();
+	private final List<ClassLoaderListener> listeners = new ArrayList<>();
 	
 	@Override
 	public void addClassLoaderListener(ClassLoaderListener listener) {
@@ -146,9 +118,9 @@ public abstract class AbstractDexFileManager<T> extends AbstractAdvisor implemen
 		}
 	}
 
-    public List<Class> getLoadedClasses() {
-        List<Class> classes = new ArrayList<Class>();
-        for ( Class c  : context.getInstrumentation().getAllLoadedClasses() ) {
+    public List<Class<?>> getLoadedClasses() {
+        List<Class<?>> classes = new ArrayList<>();
+        for ( Class<?> c  : context.getInstrumentation().getAllLoadedClasses() ) {
             if ( ! c.isArray() && ! c.isPrimitive() && ! c.isSynthetic() ) {
                 classes.add( c );
             }

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.fuzhu8.inspector.bytecode;
 
 import java.lang.reflect.InvocationTargetException;
@@ -17,9 +14,6 @@ public interface DexFileManager {
 	
 	/**
 	 * 内存
-	 * @param startAddr
-	 * @param length
-	 * @return
 	 */
 	ByteBuffer dumpMemory(long startAddr, long length);
 	
@@ -29,20 +23,13 @@ public interface DexFileManager {
 
 	/**
 	 * 组装
-	 * @param inspector
 	 */
 	void setInspector(Inspector inspector);
 	
-	/**
-	 * 发现ClassLoader
-	 */
-	void discoverClassLoader();
-	
-	List<Class> getLoadedClasses();
+	List<Class<?>> getLoadedClasses();
 	
 	/**
 	 * 获取class bytecode
-	 * @param clazz
 	 * @return bytecode
 	 */
 	byte[] getClassBytes(String clazz);
