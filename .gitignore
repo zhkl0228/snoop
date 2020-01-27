@@ -2,3 +2,5 @@
 /boot/target/
 /example-plugin/target/
 /runtime/target/
+*.iml
+/.idea/
