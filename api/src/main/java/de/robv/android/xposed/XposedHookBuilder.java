@@ -48,6 +48,9 @@ public class XposedHookBuilder implements HookBuilder {
     @Override
     public HookBuilder hookClassInitializer(XC_MethodHook callback) throws NotFoundException, CannotCompileException {
         CtConstructor classInitializer = cc.getClassInitializer();
+        if (classInitializer == null) {
+            throw new NotFoundException("Not found class initializer: " + cc.getName());
+        }
         XposedBridge.hookClassInitializer(cc, classInitializer, callback);
         if (appender != null) {
             appender.out_println("Hook class initializer: " + classInitializer);

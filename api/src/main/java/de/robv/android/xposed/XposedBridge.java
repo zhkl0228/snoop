@@ -292,11 +292,7 @@ public final class XposedBridge {
 		} while (--afterIdx >= 0);
 	}
 
-	synchronized static void hookClassInitializer(CtClass cc, CtConstructor classInitializer, XC_MethodHook callback) throws CannotCompileException, NotFoundException {
-		if (classInitializer == null) {
-			throw new NullPointerException("classInitializer is null cc=" + cc);
-		}
-
+	synchronized static void hookClassInitializer(CtClass cc, CtConstructor classInitializer, XC_MethodHook callback) throws CannotCompileException {
 		// unfreeze the class so we can modify it
 		cc.defrost();
 
