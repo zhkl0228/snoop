@@ -1,7 +1,5 @@
 package com.pnfsoftware.jeb;
 
-import cn.banny.auxiliary.Inspector;
-import cn.banny.utils.Hex;
 import com.aspect.snoop.plugin.jeb.*;
 import junit.framework.TestCase;
 
@@ -28,7 +26,7 @@ public class JebTest extends TestCase {
 
     public void testDecodeRequest() throws Exception {
         String request = "AA0000008CB99AB6E96A9146B9E6938666E1AA9CC1F776919FB952DB78CA543057C250DDB602D3C892700BA1E77D644E5599D43F4D37987C1C3001167D357A089D8BDF53FC039A4729633505881CFA0A05F2F8B0CC9E489D5964617E2C07AB1876B67025770B4A9CDC9E83129835850F5AF0BD64A63EB6B9BEA6E2395152D6D0654BD390238F59691A8F2523964EA906303A61CB1384C1257CAD874470C7E3A993BF9A0425AD48175CE381B26C05C96A0C8F";
-        byte[] data = Hex.decodeHex(request.toCharArray());
+        byte[] data = Util.hexStringToByteArray(request);
 
         byte[] key = new byte[16];
         System.arraycopy(data, 0, key, 0, 8);
@@ -55,7 +53,7 @@ public class JebTest extends TestCase {
         String osArch = Util.readUTF(dataIn);
         String osVersion = Util.readUTF(dataIn);
         String compName = Util.readUTF(dataIn);
-        Inspector.inspect(data, "request user_id=" + user_id + ", license_id=" + license_id + ", machine_id=0x" + Long.toHexString(machine_id) +
+        System.out.println("request user_id=" + user_id + ", license_id=" + license_id + ", machine_id=0x" + Long.toHexString(machine_id) +
                 ", build_type=0x" + Integer.toHexString(build_type) + ", version=" + (major + "." + minor + "." + buildId + "." + timestamp) +
                 ", startSeconds=" + startSeconds + ", classSecureMask=" + classSecureMask + ", random=" + random +
                 ", username=" + username + ", javaVendor=" + javaVendor + ", javaVersion=" + javaVersion +

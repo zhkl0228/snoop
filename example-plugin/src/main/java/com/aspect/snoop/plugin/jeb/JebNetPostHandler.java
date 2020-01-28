@@ -1,6 +1,5 @@
 package com.aspect.snoop.plugin.jeb;
 
-import cn.banny.utils.Hex;
 import com.fuzhu8.inspector.plugin.Appender;
 import de.robv.android.xposed.XC_MethodHook;
 
@@ -33,7 +32,7 @@ public class JebNetPostHandler extends XC_MethodHook {
 
     private void dumpRequest(String request, String response) {
         try {
-            byte[] data = Hex.decodeHex(request.toCharArray());
+            byte[] data = Util.hexStringToByteArray(request);
 
             byte[] key = new byte[16];
             System.arraycopy(data, 0, key, 0, 8);

@@ -1,8 +1,5 @@
 package com.aspect.snoop.plugin.jeb;
 
-import cn.banny.auxiliary.Inspector;
-import cn.banny.utils.Hex;
-
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -54,7 +51,7 @@ public class Util {
                     }
 
                     byte[] key = Arrays.copyOfRange(responseData, 20, 20 + m);
-                    byte[] body = Hex.decodeHex(response.substring(index + 1).trim().toCharArray());
+                    byte[] body = hexStringToByteArray(response.substring(index + 1).trim());
                     if (body.length != bodySize) {
                         return null;
                     }
@@ -71,11 +68,11 @@ public class Util {
                     String password = readUTF(dataIn);
                     int channel = dataIn.readInt();
                     int flags = dataIn.readInt();
-                    Inspector.inspect(body, "decodeCheckUpdate random=" + random + ", channel=" + channel + ", flags=0x" + Integer.toHexString(flags));
+                    System.out.println("decodeCheckUpdate random=" + random + ", channel=" + channel + ", flags=0x" + Integer.toHexString(flags));
                     return new CheckUpdate(code, version, updateUrl, hash, password);
                 }
             }
-        } catch (NumberFormatException | IOException | Hex.DecoderException ignored) {}
+        } catch (NumberFormatException | IOException ignored) {}
         return null;
     }
 
@@ -88,6 +85,45 @@ public class Util {
         if (read != size)
             throw new EOFException();
         return new String(data, StandardCharsets.UTF_8);
+    }
+
+
+    public static String byteArrayToHexString(byte[] data) {
+        return byteArrayToHexString(data, 0, data.length);
+    }
+
+    public static String byteArrayToHexString(byte[] data, int index) {
+        return byteArrayToHexString(data, index, data.length);
+    }
+
+    public static String byteArrayToHexString(byte[] data, int index, int length) {
+        if (data == null || index < 0 || length > data.length || index > length)
+            throw new IllegalArgumentException();
+        StringBuilder builder = new StringBuilder();
+        for (int i = index; i < length; i++) {
+            builder.append(String.format("%02X", data[i]));
+        }
+        return builder.toString();
+    }
+
+    public static byte[] hexStringToByteArray(String hex, int index, int length) {
+        if (index < 0 || index > length || (length - index) % 2 != 0)
+            return null;
+        int i = (length - index) / 2;
+        byte[] data = new byte[i];
+        for (int b = 0; b < i; b++) {
+            try {
+                data[b] = (byte)Integer.parseInt(hex.substring(index, index + 2), 16);
+                index += 2;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return data;
+    }
+
+    public static byte[] hexStringToByteArray(String hex) {
+        return hexStringToByteArray(hex, 0, hex.length());
     }
 
 }
