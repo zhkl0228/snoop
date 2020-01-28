@@ -5,6 +5,7 @@ import de.robv.android.xposed.callbacks.XCallback;
 import java.lang.reflect.Member;
 
 public abstract class XC_MethodHook extends XCallback {
+
 	public XC_MethodHook() {
 		super();
 	}
@@ -25,7 +26,6 @@ public abstract class XC_MethodHook extends XCallback {
 	 * to modify the return value of the original method.
 	 */
 	protected void afterHookedMethod(MethodHookParam param) throws Throwable {}
-
 
 	public static class MethodHookParam {
 		/** Description of the hooked method */

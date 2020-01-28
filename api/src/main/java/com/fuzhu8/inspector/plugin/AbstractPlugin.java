@@ -15,9 +15,9 @@ public abstract class AbstractPlugin implements Plugin {
     }
 
     @Override
-    public byte[] onTransform(ClassLoader loader, CtClass clazz) throws NotFoundException, CannotCompileException, IOException {
+    public byte[] onTransform(ClassLoader loader, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
         if (appender.isDebug()) {
-            appender.out_println("onTransform loader=" + loader + ", class=" + clazz.getName());
+            appender.out_println("onTransform loader=" + loader + ", class=" + cc.getName());
         }
         return null;
     }

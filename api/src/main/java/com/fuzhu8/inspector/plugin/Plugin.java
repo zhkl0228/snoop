@@ -8,6 +8,6 @@ import java.io.IOException;
 
 public interface Plugin {
 
-    byte[] onTransform(ClassLoader loader, CtClass clazz) throws NotFoundException, CannotCompileException, IOException;
+    byte[] onTransform(ClassLoader loader, CtClass cc) throws NotFoundException, CannotCompileException, IOException;
 
 }

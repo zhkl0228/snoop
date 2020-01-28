@@ -7,6 +7,7 @@ import com.fuzhu8.inspector.plugin.InspectorPlugin;
 import com.fuzhu8.inspector.plugin.Plugin;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.XposedHookBuilder;
 import javassist.CannotCompileException;
 import javassist.CtClass;
@@ -26,18 +27,18 @@ public class JebPlugin extends AbstractPlugin implements Plugin {
     }
 
     @Override
-    public byte[] onTransform(ClassLoader loader, CtClass clazz) throws NotFoundException, CannotCompileException, IOException {
-        if ("com.pnfsoftware.jeb.client.JebNet".equals(clazz.getName())) {
-            CtMethod[] methods = clazz.getDeclaredMethods("post");
+    public byte[] onTransform(ClassLoader loader, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
+        if ("com.pnfsoftware.jeb.client.JebNet".equals(cc.getName())) {
+            CtMethod[] methods = cc.getDeclaredMethods("post");
             for (CtMethod method : methods) {
                 if (method.getParameterTypes().length == 4) {
                     appender.out_println("Hook method=" + method);
                     return XposedBridge.hookMethod(method, new JebNetPostHandler(appender)); // disable update check
                 }
             }
-        } else if ("com.pnfsoftware.jeb.util.base.Flags".equals(clazz.getName())) {
-            CtMethod method = clazz.getDeclaredMethod("has");
-            return XposedHookBuilder.createBuilder(clazz, appender).hook(method, new XC_MethodHook() {
+        } else if ("com.pnfsoftware.jeb.util.base.Flags".equals(cc.getName())) {
+            CtMethod method = cc.getDeclaredMethod("has");
+            return XposedHookBuilder.createBuilder(cc, appender).hook(method, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     super.afterHookedMethod(param);
@@ -48,8 +49,37 @@ public class JebPlugin extends AbstractPlugin implements Plugin {
                     appender.out_println("Flags.has(0x" + Integer.toHexString(value) + ") => " + param.getResult());
                 }
             }).build();
+        } else if ("com.pnfsoftware.jeb.client.AbstractContext".equals(cc.getName())) {
+            return XposedHookBuilder.createBuilder(cc, appender).hookClassInitializer(new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    super.afterHookedMethod(param);
+
+                    String app_ver = String.valueOf(XposedHelpers.getStaticObjectField((Class<?>) param.thisObject, "app_ver"));
+                    appender.out_println("Jeb version found: " + app_ver);
+                }
+            }).build();
+        } else if ("com.pnfsoftware.jeb.client.Licensing".equals(cc.getName())) {
+            return XposedHookBuilder.createBuilder(cc, appender).hookClassInitializer(new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    super.afterHookedMethod(param);
+
+                    Class<?> clazz = (Class<?>) param.thisObject;
+                    int build_type = XposedHelpers.getStaticIntField(clazz, "build_type");
+                    build_type |= FLAG_AIRGAP;
+                    XposedHelpers.setStaticIntField(clazz, "build_type", build_type);
+
+                    int license_validity = XposedHelpers.getStaticIntField(clazz, "license_validity");
+                    license_validity += (365 * 5); // 5 years
+                    XposedHelpers.setStaticIntField(clazz, "license_validity", license_validity);
+                }
+            }).build();
         }
 
-        return super.onTransform(loader, clazz);
+        return super.onTransform(loader, cc);
     }
+
+    private static final int FLAG_AIRGAP = 8;
+
 }
