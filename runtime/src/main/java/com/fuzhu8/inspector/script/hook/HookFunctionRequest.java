@@ -4,6 +4,7 @@ import cn.banny.utils.Hex;
 import com.fuzhu8.inspector.Inspector;
 import com.fuzhu8.inspector.bytecode.DexFileManager;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.callbacks.XCallback;
 import org.keplerproject.luajava.LuaObject;
 
 import java.lang.reflect.*;
@@ -16,7 +17,7 @@ import java.util.Set;
  * @author zhkl0228
  *
  */
-public abstract class HookFunctionRequest<T> {
+public abstract class HookFunctionRequest<T extends XCallback> {
 	
 	protected final String clazz, method;
 	protected final LuaObject callback;

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.fuzhu8.inspector.xposed;
 
 import java.lang.reflect.Member;
@@ -22,9 +19,7 @@ class XposedHookFunctionRequest extends HookFunctionRequest<XC_MethodHook> {
 	
 	/**
 	 * 
-	 * @param clazz
 	 * @param method nil表示构造函数，*表示所有构造函数以及方法
-	 * @param params
 	 */
 	XposedHookFunctionRequest(String clazz, String method, LuaObject callback, String...params) {
 		super(clazz, method, callback, params);

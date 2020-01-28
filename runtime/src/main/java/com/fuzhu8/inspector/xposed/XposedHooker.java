@@ -1,8 +1,6 @@
-/**
- * 
- */
 package com.fuzhu8.inspector.xposed;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 
 import com.fuzhu8.inspector.advisor.AbstractHooker;
@@ -32,7 +30,11 @@ public class XposedHooker extends AbstractHooker<XC_MethodHook> {
 
 	@Override
 	public void hook(Class<?> clazz, Member member, Hookable handler) {
-		XposedBridge.hookMethod(member, new XposedMethodHook(handler));
+		if (member instanceof Constructor) {
+			XposedBridge.hookMethod(member, new XposedConstructorHook(handler));
+		} else {
+			XposedBridge.hookMethod(member, new XposedMethodHook(handler));
+		}
 	}
 
 	@Override

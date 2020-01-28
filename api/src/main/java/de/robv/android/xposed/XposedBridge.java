@@ -2,13 +2,14 @@ package de.robv.android.xposed;
 
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import de.robv.android.xposed.callbacks.XCMethodPointer;
+import de.robv.android.xposed.callbacks.XCallback;
 import javassist.*;
 
 import java.io.IOException;
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.*;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +54,7 @@ public final class XposedBridge {
 	 *
 	 * @param hookMethod The method to be hooked
 	 */
-	public static void hookMethod(Member hookMethod, XC_MethodHook callback) {
+	public static void hookMethod(Member hookMethod, XCallback callback) {
 		if (hookMethod.getDeclaringClass().isInterface()) {
 			throw new IllegalArgumentException("Cannot hook interfaces: " + hookMethod);
 		} else if (Modifier.isAbstract(hookMethod.getModifiers())) {
@@ -111,7 +112,7 @@ public final class XposedBridge {
 	 * Intercept every call to the specified method and call a handler function instead.
 	 * @param method The method to intercept
 	 */
-	private synchronized static void hookMethodNative(Member method, XC_MethodHook callback) {
+	private synchronized static void hookMethodNative(Member method, XCallback callback) {
 		if(instrumentation == null) {
 			throw new IllegalStateException("instrumentation is null");
 		}
@@ -144,7 +145,7 @@ public final class XposedBridge {
 				CtMethod cm = cc.getDeclaredMethod(methodName, classes);
 
 				try {
-					byte[] newByteCode = hookMethod(cm, callback);
+					byte[] newByteCode = hookMethod(cm, (XC_MethodHook) callback);
 					if (newByteCode != null) {
 						ClassDefinition definition = new ClassDefinition(declaringClass, newByteCode);
 						instrumentation.redefineClasses(definition);
@@ -166,7 +167,7 @@ public final class XposedBridge {
 				CtConstructor constructor = cc.getDeclaredConstructor(classes);
 
 				try {
-					byte[] newByteCode = XposedHookBuilder.createBuilder(cc, null).hook(constructor, callback).build();
+					byte[] newByteCode = XposedHookBuilder.createBuilder(cc, null).hook(constructor, (XC_ConstructorHook) callback).build();
 					if (newByteCode != null) {
 						ClassDefinition definition = new ClassDefinition(declaringClass, newByteCode);
 						instrumentation.redefineClasses(definition);
@@ -186,7 +187,7 @@ public final class XposedBridge {
 	 * Intercept every call to the specified method and call a handler function instead.
 	 * @param method The method to intercept
 	 */
-	public synchronized static byte[] hookMethod(CtMethod method, XC_MethodHook callback) {
+	private synchronized static byte[] hookMethod(CtMethod method, XC_MethodHook callback) {
 		try {
 			ClassPool cp = ClassPool.getDefault();
 			CtClass declaringClass = method.getDeclaringClass();
@@ -232,7 +233,7 @@ public final class XposedBridge {
 				}
 			}
 
-			CopyOnWriteSortedSet<XC_MethodHook> callbacks;
+			CopyOnWriteSortedSet<XCallback> callbacks;
 			synchronized (ctHookedMethodCallbacks) {
 				callbacks = ctHookedMethodCallbacks.get(methodId);
 				if (callbacks == null) {
@@ -250,49 +251,71 @@ public final class XposedBridge {
 
 	@SuppressWarnings({"unused"})
 	public static void handleBeforeHookedConstructor(final int methodId, final Member originalMethod, Object thisObject, Object[] args) throws Throwable {
-		CopyOnWriteSortedSet<XC_MethodHook> set = ctHookedMethodCallbacks.get(methodId);
+		CopyOnWriteSortedSet<XCallback> set = ctHookedMethodCallbacks.get(methodId);
 		Object[] callbacksSnapshot = set == null ? new Object[0] : set.getSnapshot();
 		final int callbacksLength = callbacksSnapshot.length;
 		if (callbacksLength == 0) {
 			return;
 		}
 
-		final MethodHookParam param = new MethodHookParam();
-		param.method = originalMethod;
-		param.thisObject = thisObject;
-		param.args = args;
+		if (originalMethod instanceof Constructor) {
+			final XC_ConstructorHook.ConstructorBeforeHookParam param = new XC_ConstructorHook.ConstructorBeforeHookParam ();
+			param.constructor = (Constructor<?>) originalMethod;
+			param.thisClass = (Class<?>) thisObject;
 
-		// call "before method" callbacks
-		int beforeIdx = 0;
-		do {
-			XC_MethodHook hook = (XC_MethodHook) callbacksSnapshot[beforeIdx];
-			hook.beforeHookedMethod(param);
-		} while (++beforeIdx < callbacksLength);
+			// call "before method" callbacks
+			int beforeIdx = 0;
+			do {
+				XC_ConstructorHook hook = (XC_ConstructorHook) callbacksSnapshot[beforeIdx];
+				hook.beforeHookedConstructor(param);
+			} while (++beforeIdx < callbacksLength);
+		} else {
+			final XC_ClassInitializerHook.ClassInitializerHookParam param = new XC_ClassInitializerHook.ClassInitializerHookParam();
+			param.thisClass = (Class<?>) thisObject;
+
+			// call "before method" callbacks
+			int beforeIdx = 0;
+			do {
+				XC_ClassInitializerHook hook = (XC_ClassInitializerHook) callbacksSnapshot[beforeIdx];
+				hook.beforeHookedClassInitializer(param);
+			} while (++beforeIdx < callbacksLength);
+		}
 	}
 
 	@SuppressWarnings({"unused"})
 	public static void handleAfterHookedConstructor(final int methodId, final Member originalMethod, Object thisObject, Object[] args) throws Throwable {
-		CopyOnWriteSortedSet<XC_MethodHook> set = ctHookedMethodCallbacks.get(methodId);
+		CopyOnWriteSortedSet<XCallback> set = ctHookedMethodCallbacks.get(methodId);
 		Object[] callbacksSnapshot = set == null ? new Object[0] : set.getSnapshot();
 		final int callbacksLength = callbacksSnapshot.length;
 		if (callbacksLength == 0) {
 			return;
 		}
 
-		final MethodHookParam param = new MethodHookParam();
-		param.method = originalMethod;
-		param.thisObject = thisObject;
-		param.args = args;
+		if (originalMethod instanceof Constructor) {
+			final XC_ConstructorHook.ConstructorAfterHookParam param = new XC_ConstructorHook.ConstructorAfterHookParam();
+			param.constructor = (Constructor<?>) originalMethod;
+			param.thisObject = thisObject;
 
-		// call "after method" callbacks
-		int afterIdx = callbacksLength - 1;
-		do {
-			XC_MethodHook hook = (XC_MethodHook) callbacksSnapshot[afterIdx];
-			hook.afterHookedMethod(param);
-		} while (--afterIdx >= 0);
+			// call "after method" callbacks
+			int afterIdx = callbacksLength - 1;
+			do {
+				XC_ConstructorHook hook = (XC_ConstructorHook) callbacksSnapshot[afterIdx];
+				hook.afterHookedConstructor(param);
+			} while (--afterIdx >= 0);
+		} else {
+			final XC_ClassInitializerHook.ClassInitializerHookParam param = new XC_ClassInitializerHook.ClassInitializerHookParam();
+			param.thisClass = (Class<?>) thisObject;
+
+			// call "after method" callbacks
+			int afterIdx = callbacksLength - 1;
+			do {
+				XC_ClassInitializerHook hook = (XC_ClassInitializerHook) callbacksSnapshot[afterIdx];
+				hook.afterHookedClassInitializer(param);
+			} while (--afterIdx >= 0);
+		}
 	}
 
-	synchronized static void hookClassInitializer(CtClass cc, CtConstructor classInitializer, XC_MethodHook callback) throws CannotCompileException {
+	synchronized static void hookClassInitializer(CtClass cc, CtConstructor classInitializer, XC_ClassInitializerHook callback) throws CannotCompileException {
 		// unfreeze the class so we can modify it
 		cc.defrost();
 
@@ -301,7 +324,7 @@ public final class XposedBridge {
 		String handleBeforeHookedConstructor = "de.robv.android.xposed.XposedBridge.handleBeforeHookedConstructor(" + methodId + ", null, " + clazz + ", new Object[0]);\n";
 		String handleAfterHookedConstructor = "de.robv.android.xposed.XposedBridge.handleAfterHookedConstructor(" + methodId + ", null, " + clazz + ", new Object[0]);\n";
 
-		CopyOnWriteSortedSet<XC_MethodHook> callbacks;
+		CopyOnWriteSortedSet<XCallback> callbacks;
 		synchronized (ctHookedMethodCallbacks) {
 			callbacks = ctHookedMethodCallbacks.get(methodId);
 			if (callbacks == null) {
@@ -319,7 +342,7 @@ public final class XposedBridge {
 				"}");
 	}
 
-	synchronized static void hookConstructor(CtClass cc, CtConstructor constructor, XC_MethodHook callback) throws CannotCompileException, NotFoundException {
+	synchronized static void hookConstructor(CtClass cc, CtConstructor constructor, XC_ConstructorHook callback) throws CannotCompileException, NotFoundException {
 		// unfreeze the class so we can modify it
 		cc.defrost();
 
@@ -328,7 +351,7 @@ public final class XposedBridge {
 		String handleBeforeHookedConstructor = "de.robv.android.xposed.XposedBridge.handleBeforeHookedConstructor(" + methodId + ", constructor, " + clazz + ", $args);\n";
 		String handleAfterHookedConstructor = "de.robv.android.xposed.XposedBridge.handleAfterHookedConstructor(" + methodId + ", constructor, $0, $args);\n";
 
-		CopyOnWriteSortedSet<XC_MethodHook> callbacks;
+		CopyOnWriteSortedSet<XCallback> callbacks;
 		synchronized (ctHookedMethodCallbacks) {
 			callbacks = ctHookedMethodCallbacks.get(methodId);
 			if (callbacks == null) {
@@ -409,7 +432,7 @@ public final class XposedBridge {
 			}
 		}
 
-		CopyOnWriteSortedSet<XC_MethodHook> callbacks;
+		CopyOnWriteSortedSet<XCallback> callbacks;
 		synchronized (ctHookedMethodCallbacks) {
 			callbacks = ctHookedMethodCallbacks.get(methodId);
 			if (callbacks == null) {
@@ -440,14 +463,14 @@ public final class XposedBridge {
 				"}");
 	}
 
-	private static final Map<Integer, CopyOnWriteSortedSet<XC_MethodHook>> ctHookedMethodCallbacks = new HashMap<>();
+	private static final Map<Integer, CopyOnWriteSortedSet<XCallback>> ctHookedMethodCallbacks = new HashMap<>();
 
 	/**
 	 * This method is called as a replacement for hooked methods.
 	 */
 	@SuppressWarnings({"unused", "unchecked"})
 	public static Object handleHookedMethod(final int methodId, final Method originalMethod, Object thisObject, Object[] args) throws Throwable {
-		CopyOnWriteSortedSet<XC_MethodHook> set = ctHookedMethodCallbacks.get(methodId);
+		CopyOnWriteSortedSet<XCallback> set = ctHookedMethodCallbacks.get(methodId);
 		Object[] callbacksSnapshot = set == null ? new Object[0] : set.getSnapshot();
 		final int callbacksLength = callbacksSnapshot.length;
 		if (callbacksLength == 0) {

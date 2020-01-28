@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.fuzhu8.inspector.xposed;
 
 import java.lang.reflect.Member;
@@ -25,7 +22,7 @@ public class XposedMethodHook extends XC_MethodHook {
 	}
 
 	@Override
-	protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+	protected void beforeHookedMethod(MethodHookParam param) {
 		try {
 			super.beforeHookedMethod(param);
 			
@@ -33,8 +30,8 @@ public class XposedMethodHook extends XC_MethodHook {
 			
 			Object value = handler.handleBefore(hooked, param.thisObject, param.args);
 			if(value != null) {
-				if(Method.class.isInstance(hooked) &&
-						Method.class.cast(hooked).getReturnType() != void.class) {
+				if(hooked instanceof Method &&
+						((Method) hooked).getReturnType() != void.class) {
 					param.setResult(value);
 				} else {
 					param.setResult(null);
@@ -46,7 +43,7 @@ public class XposedMethodHook extends XC_MethodHook {
 	}
 
 	@Override
-	protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+	protected void afterHookedMethod(MethodHookParam param) {
 		try {
 			super.afterHookedMethod(param);
 			
@@ -57,8 +54,8 @@ public class XposedMethodHook extends XC_MethodHook {
 			Member hooked = param.method;
 			
 			Object result = handler.handleAfter(hooked, param.thisObject, param.args, param.getResult());
-			if(Method.class.isInstance(hooked) &&
-					Method.class.cast(hooked).getReturnType() != void.class) {
+			if(hooked instanceof Method &&
+					((Method) hooked).getReturnType() != void.class) {
 				param.setResult(result);
 			}
 		} catch(Throwable t) {

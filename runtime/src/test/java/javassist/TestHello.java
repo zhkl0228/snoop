@@ -1,8 +1,6 @@
 package javassist;
 
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.XposedHookBuilder;
+import de.robv.android.xposed.*;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
@@ -31,38 +29,38 @@ public class TestHello extends TestCase {
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 				super.beforeHookedMethod(param);
-				System.out.println("beforeHookedMethod method=" + param.method + ", this=" + param.thisObject);
+				System.out.println("beforeHookedMethod method=" + param.method + ", thisObject=" + param.thisObject);
 			}
 
 			@Override
 			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 				super.afterHookedMethod(param);
-				System.out.println("afterHookedMethod method=" + param.method + ", this=" + param.thisObject);
+				System.out.println("afterHookedMethod method=" + param.method + ", thisObject=" + param.thisObject);
 				param.setResult("Test");
 			}
-		}).hook(cc.getDeclaredConstructor(new CtClass[0]), new XC_MethodHook() {
+		}).hook(cc.getDeclaredConstructor(new CtClass[0]), new XC_ConstructorHook() {
 			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				super.beforeHookedMethod(param);
-				System.out.println("beforeHookedMethod method=" + param.method + ", this=" + param.thisObject);
+			protected void beforeHookedConstructor(ConstructorBeforeHookParam param) throws Throwable {
+				super.beforeHookedConstructor(param);
+				System.out.println("beforeHookedConstructor constructor=" + param.constructor + ", thisClass=" + param.thisClass);
 			}
 
 			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				super.afterHookedMethod(param);
-				System.out.println("afterHookedMethod method=" + param.method + ", this=" + param.thisObject);
+			protected void afterHookedConstructor(ConstructorAfterHookParam param) throws Throwable {
+				super.afterHookedConstructor(param);
+				System.out.println("afterHookedConstructor constructor=" + param.constructor + ", thisObject=" + param.thisObject);
 			}
-		}).hookClassInitializer(new XC_MethodHook() {
+		}).hookClassInitializer(new XC_ClassInitializerHook() {
 			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				super.beforeHookedMethod(param);
-				System.out.println("beforeHookedMethod method=" + param.method + ", this=" + param.thisObject);
+			protected void beforeHookedClassInitializer(ClassInitializerHookParam param) throws Throwable {
+				super.beforeHookedClassInitializer(param);
+				System.out.println("beforeHookedClassInitializer thisClass=" + param.thisClass);
 			}
 
 			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				super.afterHookedMethod(param);
-				System.out.println("afterHookedMethod method=" + param.method + ", this=" + param.thisObject);
+			protected void afterHookedClassInitializer(ClassInitializerHookParam param) throws Throwable {
+				super.afterHookedClassInitializer(param);
+				System.out.println("afterHookedClassInitializer thisClass=" + param.thisClass);
 			}
 		}).build();
 		assertNotNull(classData);

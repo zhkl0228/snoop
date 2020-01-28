@@ -370,7 +370,6 @@ public class XposedHelpers {
 		return sb.toString();
 	}
 
-
 	public static Constructor<?> findConstructorExact(Class<?> clazz, Object... parameterTypes) {
 		return findConstructorExact(clazz, getParameterClasses(clazz.getClassLoader(), parameterTypes));
 	}
@@ -402,6 +401,21 @@ public class XposedHelpers {
 			throw new NoSuchMethodError(fullConstructorName);
 		}
 	}
+
+	public static void findAndHookConstructor(Class<?> clazz, Object... parameterTypesAndCallback) {
+		if (parameterTypesAndCallback.length != 0 && parameterTypesAndCallback[parameterTypesAndCallback.length - 1] instanceof XC_ConstructorHook) {
+			XC_ConstructorHook callback = (XC_ConstructorHook)parameterTypesAndCallback[parameterTypesAndCallback.length - 1];
+			Constructor<?> m = findConstructorExact(clazz, getParameterClasses(clazz.getClassLoader(), parameterTypesAndCallback));
+			XposedBridge.hookMethod(m, callback);
+		} else {
+			throw new IllegalArgumentException("no callback defined");
+		}
+	}
+
+	public static void findAndHookConstructor(String className, ClassLoader classLoader, Object... parameterTypesAndCallback) {
+		findAndHookConstructor(findClass(className, classLoader), parameterTypesAndCallback);
+	}
+
 	/**
 	 * <p>Checks whether two arrays are the same length, treating
 	 * {@code null} arrays as length {@code 0}.
