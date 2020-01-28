@@ -13,6 +13,8 @@ public interface HookBuilder {
 
     HookBuilder hook(CtConstructor constructor, XC_MethodHook callback) throws NotFoundException, CannotCompileException;
 
+    HookBuilder hookClassInitializer(XC_MethodHook callback) throws NotFoundException, CannotCompileException;
+
     byte[] build() throws CannotCompileException, IOException;
 
 }

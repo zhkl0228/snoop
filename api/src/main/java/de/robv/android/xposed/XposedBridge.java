@@ -292,12 +292,44 @@ public final class XposedBridge {
 		} while (--afterIdx >= 0);
 	}
 
+	synchronized static void hookClassInitializer(CtClass cc, CtConstructor classInitializer, XC_MethodHook callback) throws CannotCompileException, NotFoundException {
+		if (classInitializer == null) {
+			throw new NullPointerException("classInitializer is null cc=" + cc);
+		}
+
+		// unfreeze the class so we can modify it
+		cc.defrost();
+
+		final String clazz = cc.getName() + ".class";
+		final int methodId = Objects.hashCode(classInitializer.getLongName());
+		String handleBeforeHookedConstructor = "de.robv.android.xposed.XposedBridge.handleBeforeHookedConstructor(" + methodId + ", null, " + clazz + ", new Object[0]);\n";
+		String handleAfterHookedConstructor = "de.robv.android.xposed.XposedBridge.handleAfterHookedConstructor(" + methodId + ", null, " + clazz + ", new Object[0]);\n";
+
+		CopyOnWriteSortedSet<XC_MethodHook> callbacks;
+		synchronized (ctHookedMethodCallbacks) {
+			callbacks = ctHookedMethodCallbacks.get(methodId);
+			if (callbacks == null) {
+				callbacks = new CopyOnWriteSortedSet<>();
+				ctHookedMethodCallbacks.put(methodId, callbacks);
+			}
+		}
+		callbacks.add(callback);
+
+		classInitializer.insertBefore("{\n" +
+				handleBeforeHookedConstructor +
+				"}");
+		classInitializer.insertAfter("{\n" +
+				handleAfterHookedConstructor +
+				"}");
+	}
+
 	synchronized static void hookConstructor(CtClass cc, CtConstructor constructor, XC_MethodHook callback) throws CannotCompileException, NotFoundException {
 		// unfreeze the class so we can modify it
 		cc.defrost();
 
+		final String clazz = cc.getName() + ".class";
 		final int methodId = Objects.hashCode(constructor.getLongName());
-		String handleBeforeHookedConstructor = "de.robv.android.xposed.XposedBridge.handleBeforeHookedConstructor(" + methodId + ", constructor, null, $args);\n";
+		String handleBeforeHookedConstructor = "de.robv.android.xposed.XposedBridge.handleBeforeHookedConstructor(" + methodId + ", constructor, " + clazz + ", $args);\n";
 		String handleAfterHookedConstructor = "de.robv.android.xposed.XposedBridge.handleAfterHookedConstructor(" + methodId + ", constructor, $0, $args);\n";
 
 		CopyOnWriteSortedSet<XC_MethodHook> callbacks;

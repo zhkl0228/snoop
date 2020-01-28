@@ -5,6 +5,10 @@ package javassist;
  *
  */
 public class Hello {
+
+    static {
+        System.out.println("Hello initializer");
+    }
 	
 	String say() {
         System.out.println("Hello");

@@ -16,12 +16,13 @@ import javassist.NotFoundException;
 import java.io.IOException;
 
 @InspectorPlugin
-public class ExamplePlugin extends AbstractPlugin implements Plugin {
+@SuppressWarnings("unused")
+public class JebPlugin extends AbstractPlugin implements Plugin {
 
-    public ExamplePlugin(Appender appender) {
+    public JebPlugin(Appender appender) {
         super(appender);
 
-        System.out.println("Initialize example jeb plugin");
+        System.out.println("Initialize crack jeb plugin");
     }
 
     @Override
@@ -31,7 +32,7 @@ public class ExamplePlugin extends AbstractPlugin implements Plugin {
             for (CtMethod method : methods) {
                 if (method.getParameterTypes().length == 4) {
                     appender.out_println("Hook method=" + method);
-                    return XposedBridge.hookMethod(method, new JebNetPostHandler(appender));
+                    return XposedBridge.hookMethod(method, new JebNetPostHandler(appender)); // disable update check
                 }
             }
         } else if ("com.pnfsoftware.jeb.util.base.Flags".equals(clazz.getName())) {

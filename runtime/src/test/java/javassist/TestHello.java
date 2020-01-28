@@ -13,6 +13,13 @@ import java.io.ByteArrayInputStream;
  */
 public class TestHello extends TestCase {
 
+	private static class MyClassLoader extends ClassLoader {
+
+		public MyClassLoader(ClassLoader parent) {
+			super(parent);
+		}
+	}
+
 	public void testSayHello() throws Exception {
 		ClassPool cp = ClassPool.getDefault();
 
@@ -24,16 +31,28 @@ public class TestHello extends TestCase {
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 				super.beforeHookedMethod(param);
-				System.out.println("beforeHookedMethod method=" + param.method);
+				System.out.println("beforeHookedMethod method=" + param.method + ", this=" + param.thisObject);
 			}
 
 			@Override
 			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 				super.afterHookedMethod(param);
-				System.out.println("afterHookedMethod method=" + param.method);
+				System.out.println("afterHookedMethod method=" + param.method + ", this=" + param.thisObject);
 				param.setResult("Test");
 			}
 		}).hook(cc.getDeclaredConstructor(new CtClass[0]), new XC_MethodHook() {
+			@Override
+			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+				super.beforeHookedMethod(param);
+				System.out.println("beforeHookedMethod method=" + param.method + ", this=" + param.thisObject);
+			}
+
+			@Override
+			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+				super.afterHookedMethod(param);
+				System.out.println("afterHookedMethod method=" + param.method + ", this=" + param.thisObject);
+			}
+		}).hookClassInitializer(new XC_MethodHook() {
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 				super.beforeHookedMethod(param);
