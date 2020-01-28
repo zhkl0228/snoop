@@ -26,8 +26,6 @@ import com.aspect.snoop.util.SimpleFileFilter;
 import com.aspect.snoop.util.UIUtil;
 import javassist.ClassPath;
 import javassist.ClassPool;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
@@ -75,7 +73,7 @@ public class NewProcessInfoView extends javax.swing.JDialog {
 
         if (lastStartSession == null) {
             try {
-                lastStartSession = SessionPersistenceUtil.loadSession(new File(FileUtils.getUserDirectory(), ".snoop/new_process_info.session"));
+                lastStartSession = SessionPersistenceUtil.loadSession(new File(System.getProperty("user.home"), ".snoop/new_process_info.session"));
             } catch (IOException ignored) {
             }
         }
@@ -95,7 +93,7 @@ public class NewProcessInfoView extends javax.swing.JDialog {
             if (lastStartSession.getClasspathString() != null) {
                 for (String classPath : Util.convertStringToList(lastStartSession.getClasspathString(), File.pathSeparator)) {
                     File file = new File(classPath);
-                    if (file.exists() && "jar".equalsIgnoreCase(FilenameUtils.getExtension(file.getName()))) {
+                    if (file.exists() && file.getName().endsWith(".jar")) {
                         try {
                             ClassPath entry = new SmartURLClassPath(file.toURI().toURL());
                             cp.appendClassPath(entry);
@@ -642,7 +640,7 @@ public class NewProcessInfoView extends javax.swing.JDialog {
         try {
             model.setGuiDelay(Integer.parseInt(txtGuiDelay.getText()));
             lastStartSession = model;
-            SessionPersistenceUtil.saveSession(model, new File(FileUtils.getUserDirectory(), ".snoop/new_process_info.session").getAbsolutePath());
+            SessionPersistenceUtil.saveSession(model, new File(System.getProperty("user.home"), ".snoop/new_process_info.session").getAbsolutePath());
         } catch (Exception e) {
             UIUtil.showErrorMessage(this,
                         "Please enter an integer value for the GUI delay");

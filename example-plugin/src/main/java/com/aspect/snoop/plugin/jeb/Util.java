@@ -1,9 +1,7 @@
 package com.aspect.snoop.plugin.jeb;
 
 import cn.banny.auxiliary.Inspector;
-import cn.banny.utils.StringUtils;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
+import cn.banny.utils.Hex;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
@@ -20,7 +18,7 @@ public class Util {
     private static String lJ = Nj.VC(new byte[] { -8, 3, 0, 6, 4 }, 1, 206);
 
     public static CheckUpdate decodeCheckUpdate(String response) {
-        if (StringUtils.isEmpty(response)) {
+        if (response == null) {
             return null;
         }
 
@@ -71,16 +69,13 @@ public class Util {
                     String updateUrl = readUTF(dataIn);
                     String hash = readUTF(dataIn);
                     String password = readUTF(dataIn);
-                    if (StringUtils.isEmpty(version)) {
-                        return null;
-                    }
                     int channel = dataIn.readInt();
                     int flags = dataIn.readInt();
                     Inspector.inspect(body, "decodeCheckUpdate random=" + random + ", channel=" + channel + ", flags=0x" + Integer.toHexString(flags));
                     return new CheckUpdate(code, version, updateUrl, hash, password);
                 }
             }
-        } catch (NumberFormatException | DecoderException | IOException ignored) {}
+        } catch (NumberFormatException | IOException | Hex.DecoderException ignored) {}
         return null;
     }
 

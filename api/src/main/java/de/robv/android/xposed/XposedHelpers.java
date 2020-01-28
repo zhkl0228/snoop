@@ -1,8 +1,5 @@
 package de.robv.android.xposed;
 
-import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +37,7 @@ public class XposedHelpers {
 		if (classLoader == null)
 			classLoader = ClassLoader.getSystemClassLoader();
 		try {
-			return ClassUtils.getClass(classLoader, className, false);
+			return Class.forName(className, false, classLoader);
 		} catch (ClassNotFoundException e) {
 			throw new ClassNotFoundError(e);
 		}
@@ -203,22 +200,19 @@ public class XposedHelpers {
 			method.setAccessible(true);
 			result.add(method);
 		}
-		return result.toArray(new Method[result.size()]);
+		return result.toArray(new Method[0]);
 	}
 
 	/**
 	 * Look up a method in a class and set it to accessible. The result is cached.
 	 * This does not only look for exact matches, but for the closest match.
 	 * If the method was not found, a {@link NoSuchMethodError} will be thrown.
-	 * @see MethodUtils#getMatchingAccessibleMethod
 	 */
 	public static Method findMethodBestMatch(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
-		StringBuilder sb = new StringBuilder(clazz.getName());
-		sb.append('#');
-		sb.append(methodName);
-		sb.append(getParametersString(parameterTypes));
-		sb.append("#bestmatch");
-		String fullMethodName = sb.toString();
+		String fullMethodName = clazz.getName() + '#' +
+				methodName +
+				getParametersString(parameterTypes) +
+				"#bestmatch";
 
 		if (methodCache.containsKey(fullMethodName)) {
 			Method method = methodCache.get(fullMethodName);
@@ -243,7 +237,7 @@ public class XposedHelpers {
 					continue;
 
 				// compare name and parameters
-				if (method.getName().equals(methodName) && ClassUtils.isAssignable(parameterTypes, method.getParameterTypes(), true)) {
+				if (method.getName().equals(methodName) && isAssignable(parameterTypes, method.getParameterTypes())) {
 					// get accessible version of method
 					if (bestMatch == null || MemberUtils.compareParameterTypes(
 							method.getParameterTypes(),
@@ -408,6 +402,71 @@ public class XposedHelpers {
 			throw new NoSuchMethodError(fullConstructorName);
 		}
 	}
+	/**
+	 * <p>Checks whether two arrays are the same length, treating
+	 * {@code null} arrays as length {@code 0}.
+	 *
+	 * <p>Any multi-dimensional aspects of the arrays are ignored.</p>
+	 *
+	 * @param array1 the first array, may be {@code null}
+	 * @param array2 the second array, may be {@code null}
+	 * @return {@code true} if length of arrays matches, treating
+	 *  {@code null} as an empty array
+	 */
+	private static boolean isSameLength(final Object[] array1, final Object[] array2) {
+		return (array1 != null || array2 == null || array2.length <= 0) &&
+				(array2 != null || array1 == null || array1.length <= 0) &&
+				(array1 == null || array2 == null || array1.length == array2.length);
+	}
+
+	/**
+	 * <p>Checks if an array of Classes can be assigned to another array of Classes.</p>
+	 *
+	 * <p>This method calls {@link MemberUtils#isAssignable(Class, Class) isAssignable} for each
+	 * Class pair in the input arrays. It can be used to check if a set of arguments
+	 * (the first parameter) are suitably compatible with a set of method parameter types
+	 * (the second parameter).</p>
+	 *
+	 * <p>Unlike the {@link Class#isAssignableFrom(java.lang.Class)} method, this
+	 * method takes into account widenings of primitive classes and
+	 * {@code null}s.</p>
+	 *
+	 * <p>Primitive widenings allow an int to be assigned to a {@code long},
+	 * {@code float} or {@code double}. This method returns the correct
+	 * result for these cases.</p>
+	 *
+	 * <p>{@code Null} may be assigned to any reference type. This method will
+	 * return {@code true} if {@code null} is passed in and the toClass is
+	 * non-primitive.</p>
+	 *
+	 * <p>Specifically, this method tests whether the type represented by the
+	 * specified {@code Class} parameter can be converted to the type
+	 * represented by this {@code Class} object via an identity conversion
+	 * widening primitive or widening reference conversion. See
+	 * <em><a href="http://docs.oracle.com/javase/specs/">The Java Language Specification</a></em>,
+	 * sections 5.1.1, 5.1.2 and 5.1.4 for details.</p>
+	 *
+	 * @param classArray  the array of Classes to check, may be {@code null}
+	 * @param toClassArray  the array of Classes to try to assign into, may be {@code null}
+	 * @return {@code true} if assignment possible
+	 */
+	private static boolean isAssignable(Class<?>[] classArray, Class<?>[] toClassArray) {
+		if (!isSameLength(classArray, toClassArray)) {
+			return false;
+		}
+		if (classArray == null) {
+			classArray = new Class<?>[0];
+		}
+		if (toClassArray == null) {
+			toClassArray = new Class<?>[0];
+		}
+		for (int i = 0; i < classArray.length; i++) {
+			if (!MemberUtils.isAssignable(classArray[i], toClassArray[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	public static Constructor<?> findConstructorBestMatch(Class<?> clazz, Class<?>... parameterTypes) {
 		StringBuilder sb = new StringBuilder(clazz.getName());
@@ -432,7 +491,7 @@ public class XposedHelpers {
 		Constructor<?>[] constructors = clazz.getDeclaredConstructors();
 		for (Constructor<?> constructor : constructors) {
 			// compare name and parameters
-			if (ClassUtils.isAssignable(parameterTypes, constructor.getParameterTypes(), true)) {
+			if (isAssignable(parameterTypes, constructor.getParameterTypes())) {
 				// get accessible version of method
 				if (bestMatch == null || MemberUtils.compareParameterTypes(
 						constructor.getParameterTypes(),

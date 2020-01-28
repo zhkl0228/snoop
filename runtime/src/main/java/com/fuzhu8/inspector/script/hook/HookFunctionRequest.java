@@ -1,17 +1,16 @@
 package com.fuzhu8.inspector.script.hook;
 
+import cn.banny.utils.Hex;
+import com.fuzhu8.inspector.Inspector;
+import com.fuzhu8.inspector.bytecode.DexFileManager;
+import de.robv.android.xposed.XposedBridge;
+import org.keplerproject.luajava.LuaObject;
+
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-
-import de.robv.android.xposed.XposedBridge;
-import org.apache.commons.codec.binary.Hex;
-import org.keplerproject.luajava.LuaObject;
-
-import com.fuzhu8.inspector.Inspector;
-import com.fuzhu8.inspector.bytecode.DexFileManager;
 
 /**
  * @author zhkl0228

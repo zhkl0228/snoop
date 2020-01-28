@@ -1,17 +1,14 @@
 package com.pnfsoftware.jeb;
 
 import cn.banny.auxiliary.Inspector;
-import com.aspect.snoop.plugin.jeb.CheckUpdate;
-import com.aspect.snoop.plugin.jeb.LEDataInputStream;
-import com.aspect.snoop.plugin.jeb.Util;
-import com.aspect.snoop.plugin.jeb.iS;
+import cn.banny.utils.Hex;
+import com.aspect.snoop.plugin.jeb.*;
 import junit.framework.TestCase;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 public class JebTest extends TestCase {
 
@@ -21,7 +18,7 @@ public class JebTest extends TestCase {
         assertNotNull(checkUpdate);
         System.out.println(checkUpdate);
 
-        ByteBuffer buffer = ByteBuffer.wrap(DigestUtils.md5("C02ZQ0L4MD6W"));
+        ByteBuffer buffer = ByteBuffer.wrap(Hash.calculateMD5("C02ZQ0L4MD6W".getBytes(StandardCharsets.UTF_8)));
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         long machine_id = buffer.getLong();
         System.out.println("machine_id=0x" + Long.toHexString(machine_id));

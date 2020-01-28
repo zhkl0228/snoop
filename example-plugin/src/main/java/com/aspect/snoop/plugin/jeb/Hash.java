@@ -12,6 +12,15 @@ public class Hash {
         return crc32.getValue();
     }
 
+    public static byte[] calculateMD5(byte[] data) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            return messageDigest.digest(data);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("calculateMD5", e);
+        }
+    }
+
     public static byte[] calculateSHA256(byte[] data) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");

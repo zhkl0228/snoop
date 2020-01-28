@@ -1,8 +1,8 @@
 package com.aspect.snoop.plugin.jeb;
 
+import cn.banny.utils.Hex;
 import com.fuzhu8.inspector.plugin.Appender;
 import de.robv.android.xposed.XC_MethodHook;
-import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayInputStream;
 

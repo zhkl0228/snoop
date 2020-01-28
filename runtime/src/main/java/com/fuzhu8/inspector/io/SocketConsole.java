@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.fuzhu8.inspector.io;
 
 import java.io.DataInputStream;
@@ -9,8 +6,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-
-import org.apache.commons.io.IOUtils;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author zhkl0228
@@ -34,9 +30,9 @@ public class SocketConsole implements Console {
 	 */
 	@Override
 	public synchronized void close() {
-		try { socket.close(); } catch(Exception e) {}
-		IOUtils.closeQuietly(reader);
-		IOUtils.closeQuietly(outputStream);
+		try { socket.close(); } catch(Exception ignored) {}
+		try { reader.close(); } catch(Exception ignored) {}
+		try { outputStream.close(); } catch(Exception ignored) {}
 	}
 
 	/* (non-Javadoc)
@@ -69,7 +65,7 @@ public class SocketConsole implements Console {
 			int length = reader.readInt();
 			byte[] data = new byte[length];
 			reader.readFully(data);
-			return new LuaCommand(new String(data, "UTF-8"));
+			return new LuaCommand(new String(data, StandardCharsets.UTF_8));
 		default:
 			throw new IllegalArgumentException("Unknown command: " + type);
 		}

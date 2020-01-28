@@ -22,7 +22,6 @@ import com.strobel.decompiler.PlainTextOutput;
 import com.strobel.decompiler.languages.java.BraceStyle;
 import com.strobel.decompiler.languages.java.JavaFormattingOptions;
 import de.robv.android.xposed.XposedBridge;
-import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.lang.Thread.State;
@@ -736,11 +735,9 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 		}
 		
 		DatagramSocket datagramSocket = null;
-		ByteArrayOutputStream baos = null;
-		DataOutputStream dos = null;
 		try {
-			baos = new ByteArrayOutputStream();
-			dos = new DataOutputStream(baos);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
 			datagramSocket = new DatagramSocket();
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 			
@@ -762,8 +759,6 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 		} catch (Exception e) {
 			super.log(e);
 		} finally {
-			IOUtils.closeQuietly(dos);
-			IOUtils.closeQuietly(baos);
 			if(datagramSocket != null) {
 				datagramSocket.close();
 			}
