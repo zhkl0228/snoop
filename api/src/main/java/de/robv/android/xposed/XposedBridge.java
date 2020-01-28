@@ -7,9 +7,7 @@ import javassist.*;
 import java.io.IOException;
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,9 +54,7 @@ public final class XposedBridge {
 	 * @param hookMethod The method to be hooked
 	 */
 	public static void hookMethod(Member hookMethod, XC_MethodHook callback) {
-		if (!(hookMethod instanceof Method)) {
-			throw new IllegalArgumentException("Only methods can be hooked: " + hookMethod);
-		} else if (hookMethod.getDeclaringClass().isInterface()) {
+		if (hookMethod.getDeclaringClass().isInterface()) {
 			throw new IllegalArgumentException("Cannot hook interfaces: " + hookMethod);
 		} else if (Modifier.isAbstract(hookMethod.getModifiers())) {
 			throw new IllegalArgumentException("Cannot hook abstract methods: " + hookMethod);
@@ -68,7 +64,7 @@ public final class XposedBridge {
 			throw new IllegalArgumentException("Cannot hook synthetic methods: " + hookMethod);
 		}
 
-		hookMethodNative((Method) hookMethod, callback);
+		hookMethodNative(hookMethod, callback);
 	}
 	
 	private static Instrumentation instrumentation;
@@ -115,7 +111,7 @@ public final class XposedBridge {
 	 * Intercept every call to the specified method and call a handler function instead.
 	 * @param method The method to intercept
 	 */
-	private synchronized static void hookMethodNative(Method method, XC_MethodHook callback) {
+	private synchronized static void hookMethodNative(Member method, XC_MethodHook callback) {
 		if(instrumentation == null) {
 			throw new IllegalStateException("instrumentation is null");
 		}
@@ -126,34 +122,61 @@ public final class XposedBridge {
 		if(!instrumentation.isModifiableClass(declaringClass)) {
 			throw new UnsupportedOperationException("Can not modify the class: " + declaringClass.getCanonicalName());
 		}
-
+		if (!(method instanceof Method) && !(method instanceof Constructor)) {
+			throw new IllegalArgumentException("Only method or constructor can be hooked: " + method);
+		}
 
 		try {
 			ClassPool cp = ClassPool.getDefault();
 			CtClass cc = cp.get(declaringClass.getName());
-			String methodName = method.getName();
 
-			// get the parameters in order so we can get the method to instrument
-			Class<?>[] parameterTypes = method.getParameterTypes();
+			if (method instanceof Method) {
+				String methodName = method.getName();
 
-			CtClass[] classes = new CtClass[parameterTypes.length];
-			for(int i=0; i < parameterTypes.length; i++) {
-				classes[i] = cp.get(parameterTypes[i].getName());
-			}
+				// get the parameters in order so we can get the method to instrument
+				Class<?>[] parameterTypes = ((Method) method).getParameterTypes();
 
-			CtMethod cm = cc.getDeclaredMethod(methodName, classes);
-
-            try {
-				byte[] newByteCode = hookMethod(cm, callback);
-				if (newByteCode != null) {
-					ClassDefinition definition = new ClassDefinition(declaringClass, newByteCode);
-					instrumentation.redefineClasses(definition);
+				CtClass[] classes = new CtClass[parameterTypes.length];
+				for(int i=0; i < parameterTypes.length; i++) {
+					classes[i] = cp.get(parameterTypes[i].getName());
 				}
-            } catch (VerifyError error) {
-            	System.err.println("hook method failed: " + method);
-                error.printStackTrace();
-                cc.writeFile(System.getProperty("user.home") + "/.snoop/tmp");
-            }
+
+				CtMethod cm = cc.getDeclaredMethod(methodName, classes);
+
+				try {
+					byte[] newByteCode = hookMethod(cm, callback);
+					if (newByteCode != null) {
+						ClassDefinition definition = new ClassDefinition(declaringClass, newByteCode);
+						instrumentation.redefineClasses(definition);
+					}
+				} catch (VerifyError error) {
+					System.err.println("hook method failed: " + method);
+					error.printStackTrace();
+					cc.writeFile(System.getProperty("user.home") + "/.snoop/tmp");
+				}
+			} else {
+				// get the parameters in order so we can get the method to instrument
+				Class<?>[] parameterTypes = ((Constructor<?>) method).getParameterTypes();
+
+				CtClass[] classes = new CtClass[parameterTypes.length];
+				for(int i=0; i < parameterTypes.length; i++) {
+					classes[i] = cp.get(parameterTypes[i].getName());
+				}
+
+				CtConstructor constructor = cc.getDeclaredConstructor(classes);
+
+				try {
+					byte[] newByteCode = XposedHookBuilder.createBuilder(cc, null).hook(constructor, callback).build();
+					if (newByteCode != null) {
+						ClassDefinition definition = new ClassDefinition(declaringClass, newByteCode);
+						instrumentation.redefineClasses(definition);
+					}
+				} catch (VerifyError error) {
+					System.err.println("hook constructor failed: " + method);
+					error.printStackTrace();
+					cc.writeFile(System.getProperty("user.home") + "/.snoop/tmp");
+				}
+			}
 		} catch (Exception e) {
 			log(e);
 		}
@@ -223,6 +246,91 @@ public final class XposedBridge {
 			log(e);
 			return null;
 		}
+	}
+
+	@SuppressWarnings({"unused"})
+	public static void handleBeforeHookedConstructor(final int methodId, final Member originalMethod, Object thisObject, Object[] args) throws Throwable {
+		CopyOnWriteSortedSet<XC_MethodHook> set = ctHookedMethodCallbacks.get(methodId);
+		Object[] callbacksSnapshot = set == null ? new Object[0] : set.getSnapshot();
+		final int callbacksLength = callbacksSnapshot.length;
+		if (callbacksLength == 0) {
+			return;
+		}
+
+		final MethodHookParam param = new MethodHookParam();
+		param.method = originalMethod;
+		param.thisObject = thisObject;
+		param.args = args;
+
+		// call "before method" callbacks
+		int beforeIdx = 0;
+		do {
+			XC_MethodHook hook = (XC_MethodHook) callbacksSnapshot[beforeIdx];
+			hook.beforeHookedMethod(param);
+		} while (++beforeIdx < callbacksLength);
+	}
+
+	@SuppressWarnings({"unused"})
+	public static void handleAfterHookedConstructor(final int methodId, final Member originalMethod, Object thisObject, Object[] args) throws Throwable {
+		CopyOnWriteSortedSet<XC_MethodHook> set = ctHookedMethodCallbacks.get(methodId);
+		Object[] callbacksSnapshot = set == null ? new Object[0] : set.getSnapshot();
+		final int callbacksLength = callbacksSnapshot.length;
+		if (callbacksLength == 0) {
+			return;
+		}
+
+		final MethodHookParam param = new MethodHookParam();
+		param.method = originalMethod;
+		param.thisObject = thisObject;
+		param.args = args;
+
+		// call "after method" callbacks
+		int afterIdx = callbacksLength - 1;
+		do {
+			XC_MethodHook hook = (XC_MethodHook) callbacksSnapshot[afterIdx];
+			hook.afterHookedMethod(param);
+		} while (--afterIdx >= 0);
+	}
+
+	synchronized static void hookConstructor(CtClass cc, CtConstructor constructor, XC_MethodHook callback) throws CannotCompileException, NotFoundException {
+		// unfreeze the class so we can modify it
+		cc.defrost();
+
+		final int methodId = Objects.hashCode(constructor.getLongName());
+		String handleBeforeHookedConstructor = "de.robv.android.xposed.XposedBridge.handleBeforeHookedConstructor(" + methodId + ", constructor, null, $args);\n";
+		String handleAfterHookedConstructor = "de.robv.android.xposed.XposedBridge.handleAfterHookedConstructor(" + methodId + ", constructor, $0, $args);\n";
+
+		CopyOnWriteSortedSet<XC_MethodHook> callbacks;
+		synchronized (ctHookedMethodCallbacks) {
+			callbacks = ctHookedMethodCallbacks.get(methodId);
+			if (callbacks == null) {
+				callbacks = new CopyOnWriteSortedSet<>();
+				ctHookedMethodCallbacks.put(methodId, callbacks);
+			}
+		}
+		callbacks.add(callback);
+
+		final String sig;
+		CtClass[] types = constructor.getParameterTypes();
+		if(types.length < 1) {
+			sig = ", new Class[0]";
+		} else {
+			StringBuilder builder = new StringBuilder();
+			for(CtClass type : types) {
+				builder.append(type.getName()).append(".class").append(',');
+			}
+			builder.deleteCharAt(builder.length() - 1);
+			sig = ", new Class[] { " + builder + " }";
+		}
+
+		constructor.insertBefore("{\n" +
+				"java.lang.reflect.Member constructor = de.robv.android.xposed.XposedHelpers.findConstructorBestMatch(" + cc.getName() + ".class " + sig + ");\n" +
+				handleBeforeHookedConstructor +
+				"}");
+		constructor.insertAfter("{\n" +
+				"java.lang.reflect.Member constructor = de.robv.android.xposed.XposedHelpers.findConstructorBestMatch(" + cc.getName() + ".class " + sig + ");\n" +
+				handleAfterHookedConstructor +
+				"}");
 	}
 
 	/**
@@ -313,7 +421,6 @@ public final class XposedBridge {
 	public static Object handleHookedMethod(final int methodId, final Method originalMethod, Object thisObject, Object[] args) throws Throwable {
 		CopyOnWriteSortedSet<XC_MethodHook> set = ctHookedMethodCallbacks.get(methodId);
 		Object[] callbacksSnapshot = set == null ? new Object[0] : set.getSnapshot();
-		// log("handleHookedMethod callbacks=" + ctHookedMethodCallbacks + ", method=" + method + ", snapshot=" + Arrays.asList(callbacksSnapshot));
 		final int callbacksLength = callbacksSnapshot.length;
 		if (callbacksLength == 0) {
 			try {

@@ -1,8 +1,8 @@
 package javassist;
 
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import de.robv.android.xposed.XposedHookBuilder;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
@@ -20,7 +20,7 @@ public class TestHello extends TestCase {
 
 		CtMethod cm = cc.getDeclaredMethod("say");
 
-		byte[] classData = XposedBridge.hookMethod(cm, new XC_MethodHook() {
+		byte[] classData = XposedHookBuilder.createBuilder(cc, null).hook(cm, new XC_MethodHook() {
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 				super.beforeHookedMethod(param);
@@ -33,7 +33,19 @@ public class TestHello extends TestCase {
 				System.out.println("afterHookedMethod method=" + param.method);
 				param.setResult("Test");
 			}
-		});
+		}).hook(cc.getDeclaredConstructor(new CtClass[0]), new XC_MethodHook() {
+			@Override
+			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+				super.beforeHookedMethod(param);
+				System.out.println("beforeHookedMethod method=" + param.method + ", this=" + param.thisObject);
+			}
+
+			@Override
+			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+				super.afterHookedMethod(param);
+				System.out.println("afterHookedMethod method=" + param.method + ", this=" + param.thisObject);
+			}
+		}).build();
 		assertNotNull(classData);
 		cc.defrost();
 

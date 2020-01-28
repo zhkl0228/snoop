@@ -1,10 +1,7 @@
 package de.robv.android.xposed;
 
 import com.fuzhu8.inspector.plugin.Appender;
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.CtMethod;
-import javassist.NotFoundException;
+import javassist.*;
 
 import java.io.IOException;
 
@@ -29,14 +26,29 @@ public class XposedHookBuilder implements HookBuilder {
         }
 
         XposedBridge.hookMethod(cc, method, callback);
-        appender.out_println("Hook method: " + method);
+        if (appender != null) {
+            appender.out_println("Hook method: " + method);
+        }
+        return this;
+    }
+
+    @Override
+    public HookBuilder hook(CtConstructor constructor, XC_MethodHook callback) throws NotFoundException, CannotCompileException {
+        if (constructor.getDeclaringClass() != cc) {
+            throw new IllegalStateException("declaringClass=" + constructor.getDeclaringClass() + ", cc=" + cc);
+        }
+
+        XposedBridge.hookConstructor(cc, constructor, callback);
+        if (appender != null) {
+            appender.out_println("Hook constructor: " + constructor);
+        }
         return this;
     }
 
     @Override
     public byte[] build() throws CannotCompileException, IOException {
         byte[] newByteCode = cc.toBytecode();
-        if(appender.isDebug()) {
+        if(appender != null && appender.isDebug()) {
             cc.writeFile(System.getProperty("user.home") + "/.snoop/tmp");
         }
         return newByteCode;
