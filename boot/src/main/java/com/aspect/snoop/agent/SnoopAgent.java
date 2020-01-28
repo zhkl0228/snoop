@@ -76,32 +76,27 @@ public class SnoopAgent {
          */
         AgentLogger.debug("Adding runtime jars to system classloader...");
 
-        List<File> classFiles = new ArrayList<File>();
-        BufferedReader reader = null;
-        try {
-        	reader = new BufferedReader(new FileReader(tmpFile));
-        	String entry;
-        	while((entry = reader.readLine()) != null) {
-        		if(entry.endsWith(".jar")) {
-        	        AgentLogger.debug("Adding runtime jar: " + entry);
-        			File file = new File(entry);
-    	        	classFiles.add(file);
-        	        if(entry.contains("log4j")) {
-        	        	instrumentation.appendToSystemClassLoaderSearch(new JarFile(file));
-        	        } else {
-            	        instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(file));
-        	        }
-        		}
-        	}
+        List<File> classFiles = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(tmpFile))) {
+            String entry;
+            while ((entry = reader.readLine()) != null) {
+                if (entry.endsWith(".jar")) {
+                    AgentLogger.debug("Adding runtime jar: " + entry);
+                    File file = new File(entry);
+                    classFiles.add(file);
+                    if (entry.contains("log4j")) {
+                        instrumentation.appendToSystemClassLoaderSearch(new JarFile(file));
+                    } else {
+                        instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(file));
+                    }
+                }
+            }
         } catch (IOException ex) {
             AgentLogger.fatal(ex);
         } finally {
-        	if(reader != null) {
-        		try { reader.close(); } catch(IOException ignored) {}
-        	}
 
             if (!tmpFile.delete()) {
-        	    tmpFile.deleteOnExit();
+                tmpFile.deleteOnExit();
             }
         }
 		/*URL[] urls = sun.misc.Launcher.getBootstrapClassPath().getURLs();

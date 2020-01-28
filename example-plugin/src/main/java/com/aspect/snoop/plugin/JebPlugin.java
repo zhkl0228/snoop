@@ -71,7 +71,7 @@ public class JebPlugin extends AbstractPlugin implements Plugin {
                     XposedHelpers.setStaticIntField(clazz, "build_type", build_type);
 
                     int license_validity = XposedHelpers.getStaticIntField(clazz, "license_validity");
-                    license_validity += (365 * 5); // 5 years
+                    license_validity += (365 * 10); // 20 years
                     XposedHelpers.setStaticIntField(clazz, "license_validity", license_validity);
                 }
             }).build();

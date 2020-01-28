@@ -20,7 +20,10 @@ public class PluginClassFileTransformer implements ClassFileTransformer {
     @Override
     public final byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         try {
-            if (classBeingRedefined != null) {
+            if (classBeingRedefined != null || className == null) {
+                return classfileBuffer;
+            }
+            if (className.startsWith("java/") || className.startsWith("sun/")) {
                 return classfileBuffer;
             }
             ClassPool cp = ClassPool.getDefault();
@@ -29,7 +32,7 @@ public class PluginClassFileTransformer implements ClassFileTransformer {
             if (classData != null) {
                 return classData;
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             appender.out_println("transform failed: className=" + className + ", loader=" + loader);
             appender.printStackTrace(e);
         }

@@ -94,14 +94,13 @@ class PluginSources {
 
     }
 
-    static PluginSource singleJarSource(final URI jarFile, final ClassNameFilter filter) {
+    static PluginSource jarSource(final File jarFile, final ClassNameFilter filter) {
         return new PluginSource() {
             @Override
             final Collection<Class<?>> load() throws IOException, ClassNotFoundException {
                 final ArrayList<Class<?>> plugins = new ArrayList<>();
-                final ClassLoader loader = new URLClassLoader(new URL[] { jarFile.toURL() });
-                final Path path = Paths.get(jarFile);
-                final JarFile jar = new JarFile(path.toAbsolutePath().toFile());
+                final ClassLoader loader = new URLClassLoader(new URL[] { jarFile.toURI().toURL() });
+                final JarFile jar = new JarFile(jarFile);
                 for (Enumeration<JarEntry> entries = jar.entries(); entries.hasMoreElements();) {
                     final JarEntry entry = entries.nextElement();
                     if (entry.isDirectory() || !entry.getName().endsWith(".class")) {

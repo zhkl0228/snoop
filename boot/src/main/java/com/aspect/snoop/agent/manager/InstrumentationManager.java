@@ -79,9 +79,9 @@ public class InstrumentationManager {
 
     public InstrumentationManager(Instrumentation inst, List<File> classFiles) {
         this.inst = inst;
-        this.modifiedClasses = new HashMap<Integer,ClassHistory>();
-        this.classLoaders = new ArrayList<ClassLoader>();
-        this.urlSources = new HashMap<URL, SmartURLClassPath>();
+        this.modifiedClasses = new HashMap<>();
+        this.classLoaders = new ArrayList<>();
+        this.urlSources = new HashMap<>();
 
         updateClassPool(classFiles);
     }
