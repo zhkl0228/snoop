@@ -67,11 +67,11 @@ public class JebPlugin extends AbstractPlugin implements Plugin {
 
                     Class<?> clazz = (Class<?>) param.thisObject;
                     int build_type = XposedHelpers.getStaticIntField(clazz, "build_type");
-                    build_type |= FLAG_AIRGAP;
+                    build_type |= FLAG_AIR_GAP;
                     XposedHelpers.setStaticIntField(clazz, "build_type", build_type);
 
                     int license_validity = XposedHelpers.getStaticIntField(clazz, "license_validity");
-                    license_validity += (365 * 10); // 20 years
+                    license_validity += (365 * 10); // 10 years
                     XposedHelpers.setStaticIntField(clazz, "license_validity", license_validity);
                 }
             }).build();
@@ -80,6 +80,6 @@ public class JebPlugin extends AbstractPlugin implements Plugin {
         return super.onTransform(loader, cc);
     }
 
-    private static final int FLAG_AIRGAP = 8;
+    private static final int FLAG_AIR_GAP = 0x8;
 
 }

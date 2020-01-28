@@ -3,14 +3,10 @@ package com.fuzhu8.inspector;
 import com.fuzhu8.inspector.plugin.Appender;
 import com.fuzhu8.inspector.plugin.Plugin;
 import com.fuzhu8.inspector.plugin.PluginClassFileTransformer;
-import javassist.ClassPool;
-import javassist.NotFoundException;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 @SuppressWarnings("unused")
 class PluginInitializer implements Appender, ClassNameFilter {
@@ -23,8 +19,6 @@ class PluginInitializer implements Appender, ClassNameFilter {
 
     final void initialize(File pluginJar) {
         try {
-            updateClassPool(instrumentation, Collections.singletonList(pluginJar));
-
             PluginSource pluginSource = PluginSources.jarSource(pluginJar, this);
 
             Collection<Plugin> plugins = pluginSource.loadPlugins(this);
@@ -35,19 +29,6 @@ class PluginInitializer implements Appender, ClassNameFilter {
         } catch (Exception e) {
             this.printStackTrace(e);
         }
-    }
-
-    public final void updateClassPool(Instrumentation inst, List<File> classFiles) {
-        ClassPool classPool = ClassPool.getDefault();
-
-        for(File file : classFiles) {
-            try {
-                classPool.appendClassPath(file.getAbsolutePath());
-            } catch (NotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-
     }
 
     @Override

@@ -27,7 +27,9 @@ public class XposedHookBuilder implements HookBuilder {
 
         XposedBridge.hookMethod(cc, method, callback);
         if (appender != null) {
-            appender.out_println("Hook method: " + method);
+            appender.out_println(">-----------------------------------------------------------------------------<");
+            appender.out_println("[HOOK]: " + method.getLongName());
+            appender.out_println("^-----------------------------------------------------------------------------^");
         }
         return this;
     }
@@ -40,7 +42,9 @@ public class XposedHookBuilder implements HookBuilder {
 
         XposedBridge.hookConstructor(cc, constructor, callback);
         if (appender != null) {
-            appender.out_println("Hook constructor: " + constructor);
+            appender.out_println(">-----------------------------------------------------------------------------<");
+            appender.out_println("[HOOK]: " + constructor.getLongName());
+            appender.out_println("^-----------------------------------------------------------------------------^");
         }
         return this;
     }
@@ -53,7 +57,9 @@ public class XposedHookBuilder implements HookBuilder {
         }
         XposedBridge.hookClassInitializer(cc, classInitializer, callback);
         if (appender != null) {
-            appender.out_println("Hook class initializer: " + classInitializer);
+            appender.out_println(">-----------------------------------------------------------------------------<");
+            appender.out_println("[HOOK]: " + classInitializer.getLongName());
+            appender.out_println("^-----------------------------------------------------------------------------^");
         }
         return this;
     }
