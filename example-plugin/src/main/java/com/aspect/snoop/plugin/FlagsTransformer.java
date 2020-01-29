@@ -20,7 +20,7 @@ public class FlagsTransformer extends XC_MethodHook implements ClassTransformer 
     }
 
     @Override
-    public byte[] transform(CtClass cc) throws NotFoundException, CannotCompileException, IOException {
+    public byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
         CtMethod method = cc.getDeclaredMethod("has");
         return XposedHookBuilder.createBuilder(cc, appender).hook(method, this).build();
     }

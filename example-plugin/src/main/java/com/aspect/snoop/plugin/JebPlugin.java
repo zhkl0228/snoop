@@ -5,12 +5,16 @@ import com.fuzhu8.inspector.plugin.Appender;
 import com.fuzhu8.inspector.plugin.InspectorPlugin;
 import com.fuzhu8.inspector.plugin.Plugin;
 
+import java.lang.instrument.Instrumentation;
+
 @InspectorPlugin
 @SuppressWarnings("unused")
 public class JebPlugin extends AbstractPlugin implements Plugin {
 
-    public JebPlugin(Appender appender) {
-        super(appender);
+    public JebPlugin(Instrumentation inst, Appender appender) {
+        super(inst, appender);
+
+        this.debug = false;
     }
 
     @Override
@@ -21,6 +25,8 @@ public class JebPlugin extends AbstractPlugin implements Plugin {
         registerClassTransformer("com/pnfsoftware/jeb/client/JebNet", new JebNetTransformer(appender));
         registerClassTransformer("com/pnfsoftware/jeb/util/base/Flags", new FlagsTransformer(appender));
         registerClassTransformer("com/pnfsoftware/jeb/client/Licensing", new LicensingTransformer(appender));
+
+        registerClassTransformer("java/lang/Runtime", new RuntimeTransformer(appender));
     }
 
 }

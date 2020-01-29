@@ -22,7 +22,7 @@ public class LicensingTransformer extends XC_ClassInitializerHook implements Cla
     }
 
     @Override
-    public byte[] transform(CtClass cc) throws NotFoundException, CannotCompileException, IOException {
+    public byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
         return XposedHookBuilder.createBuilder(cc, appender).hookClassInitializer(this).build();
     }
 

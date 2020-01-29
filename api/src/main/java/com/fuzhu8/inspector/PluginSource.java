@@ -29,6 +29,7 @@ import com.fuzhu8.inspector.plugin.Appender;
 import com.fuzhu8.inspector.plugin.InspectorPlugin;
 import com.fuzhu8.inspector.plugin.Plugin;
 
+import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +46,7 @@ abstract class PluginSource {
      */
     abstract Collection<Class<?>> load() throws Exception;
 
-    final Collection<Plugin> loadPlugins(Appender appender) throws Exception {
+    final Collection<Plugin> loadPlugins(Instrumentation inst, Appender appender) throws Exception {
         final Collection<Class<?>> pluginClasses = this.load();
         final Collection<Plugin> loaded = new ArrayList<>();
 
@@ -58,9 +59,9 @@ abstract class PluginSource {
             Class<?> pluginClass = itr.next();
             if (pluginClass.isAnnotationPresent(InspectorPlugin.class)) {
                 if (AbstractPlugin.class.isAssignableFrom(pluginClass)) {
-                    Constructor<?> constructor = pluginClass.getDeclaredConstructor(Appender.class);
+                    Constructor<?> constructor = pluginClass.getDeclaredConstructor(Instrumentation.class, Appender.class);
                     constructor.setAccessible(true);
-                    Plugin plugin = (Plugin) constructor.newInstance(appender);
+                    Plugin plugin = (Plugin) constructor.newInstance(inst, appender);
                     loaded.add(plugin);
                 }
                 itr.remove();

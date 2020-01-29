@@ -20,15 +20,24 @@ public class PluginClassFileTransformer implements ClassFileTransformer {
     @Override
     public final byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         try {
-            if (classBeingRedefined != null || className == null) {
+            if (className == null) {
                 return classfileBuffer;
+            }
+
+            if (appender.isDebug() || plugin.isDebug()) {
+                String msg = "[" + plugin + "]transform className=" + className + ", classBeingRedefined=" + classBeingRedefined;
+                if (appender.isDebug()) {
+                    appender.out_println(msg);
+                } else if (plugin.isDebug()) {
+                    System.out.println(msg);
+                }
             }
 
             ClassTransformer classTransformer = plugin.selectClassTransformer(className);
             if (classTransformer != null) {
                 ClassPool cp = ClassPool.getDefault();
                 CtClass cc = cp.makeClass(new ByteArrayInputStream(classfileBuffer));
-                byte[] classData = classTransformer.transform(cc);
+                byte[] classData = classTransformer.transform(classBeingRedefined, cc);
                 if (classData != null) {
                     return classData;
                 }

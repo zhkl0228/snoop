@@ -6,7 +6,9 @@ import com.fuzhu8.inspector.plugin.PluginClassFileTransformer;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @SuppressWarnings("unused")
 class PluginInitializer implements Appender, ClassNameFilter {
@@ -18,16 +20,31 @@ class PluginInitializer implements Appender, ClassNameFilter {
     }
 
     final void initialize(File pluginJar) {
-        try {
-            PluginSource pluginSource = PluginSources.jarSource(pluginJar, this);
+        PluginSource pluginSource = PluginSources.jarSource(pluginJar, this);
+        initializePluginSource(pluginSource, instrumentation, this);
+    }
 
-            Collection<Plugin> plugins = pluginSource.loadPlugins(this);
+    static void initializePluginSource(PluginSource pluginSource, Instrumentation instrumentation, Appender appender) {
+        try {
+            Collection<Plugin> plugins = pluginSource.loadPlugins(instrumentation, appender);
             for (Plugin plugin : plugins) {
-                instrumentation.addTransformer(new PluginClassFileTransformer(this, plugin));
-                this.out_println("Discover plugin: " + plugin);
+                instrumentation.addTransformer(new PluginClassFileTransformer(appender, plugin), true);
+                appender.out_println("Discover plugin: " + plugin);
+            }
+
+            List<Class<?>> list = new ArrayList<>();
+            for (Class<?> loaded : instrumentation.getAllLoadedClasses()) {
+                for (Plugin plugin : plugins) {
+                    if (plugin.selectClassTransformer(loaded.getName().replace('.', '/')) != null) {
+                        list.add(loaded);
+                    }
+                }
+            }
+            if (!list.isEmpty()) {
+                instrumentation.retransformClasses(list.toArray(new Class<?>[0]));
             }
         } catch (Exception e) {
-            this.printStackTrace(e);
+            appender.printStackTrace(e);
         }
     }
 

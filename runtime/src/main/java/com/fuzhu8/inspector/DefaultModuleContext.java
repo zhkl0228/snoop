@@ -1,8 +1,6 @@
 package com.fuzhu8.inspector;
 
 import com.fuzhu8.inspector.bytecode.DexFileManager;
-import com.fuzhu8.inspector.plugin.Plugin;
-import com.fuzhu8.inspector.plugin.PluginClassFileTransformer;
 import com.fuzhu8.inspector.script.LuaScriptManager;
 
 import java.io.File;
@@ -61,14 +59,7 @@ public class DefaultModuleContext implements ModuleContext {
 	public void discoverPlugins(DexFileManager dexFileManager, Inspector inspector, LuaScriptManager scriptManager) {
 		File pluginDir = new File(libraryDir, "plugins");
 		PluginSource pluginSource = PluginSources.jarSource(pluginDir, classLoader);
-		try {
-			for (Plugin plugin : pluginSource.loadPlugins(inspector)) {
-				instrumentation.addTransformer(new PluginClassFileTransformer(inspector, plugin));
-				inspector.out_println("Discover plugin: " + plugin);
-			}
-		} catch (Exception e) {
-			inspector.printStackTrace(e);
-		}
+		PluginInitializer.initializePluginSource(pluginSource, instrumentation, inspector);
 	}
 
 }

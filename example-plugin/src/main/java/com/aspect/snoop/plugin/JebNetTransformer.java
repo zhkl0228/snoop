@@ -23,7 +23,7 @@ public class JebNetTransformer implements ClassTransformer {
     }
 
     @Override
-    public byte[] transform(CtClass cc) throws NotFoundException, CannotCompileException, IOException {
+    public byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
         CtMethod[] methods = cc.getDeclaredMethods("post");
         for (CtMethod method : methods) {
             if (method.getParameterTypes().length == 4) {

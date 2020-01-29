@@ -8,6 +8,6 @@ import java.io.IOException;
 
 public interface ClassTransformer {
 
-    byte[] transform(CtClass cc) throws NotFoundException, CannotCompileException, IOException;
+    byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException;
 
 }

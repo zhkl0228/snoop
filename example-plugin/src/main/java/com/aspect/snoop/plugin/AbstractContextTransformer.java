@@ -20,7 +20,7 @@ public class AbstractContextTransformer extends XC_ClassInitializerHook implemen
     }
 
     @Override
-    public byte[] transform(CtClass cc) throws NotFoundException, CannotCompileException, IOException {
+    public byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
         return XposedHookBuilder.createBuilder(cc, appender).hookClassInitializer(this).build();
     }
 
