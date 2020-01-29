@@ -1,10 +1,7 @@
 package com.fuzhu8.inspector.plugin;
 
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.NotFoundException;
-
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractPlugin implements Plugin {
 
@@ -12,14 +9,21 @@ public abstract class AbstractPlugin implements Plugin {
 
     public AbstractPlugin(Appender appender) {
         this.appender = appender;
+
+        initialize();
     }
 
+    protected abstract void initialize();
+
     @Override
-    public byte[] onTransform(ClassLoader loader, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
-        if (appender.isDebug()) {
-            appender.out_println("onTransform loader=" + loader + ", class=" + cc.getName());
-        }
-        return null;
+    public ClassTransformer selectClassTransformer(String className) {
+        return transformerMap.get(className);
+    }
+
+    private final Map<String, ClassTransformer> transformerMap = new HashMap<>();
+
+    protected final void registerClassTransformer(String className, ClassTransformer transformer) {
+        transformerMap.put(className, transformer);
     }
 
     @Override

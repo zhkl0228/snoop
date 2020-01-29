@@ -23,14 +23,15 @@ public class PluginClassFileTransformer implements ClassFileTransformer {
             if (classBeingRedefined != null || className == null) {
                 return classfileBuffer;
             }
-            if (className.startsWith("java/") || className.startsWith("sun/")) {
-                return classfileBuffer;
-            }
-            ClassPool cp = ClassPool.getDefault();
-            CtClass clazz = cp.makeClass(new ByteArrayInputStream(classfileBuffer));
-            byte[] classData = plugin.onTransform(loader, clazz);
-            if (classData != null) {
-                return classData;
+
+            ClassTransformer classTransformer = plugin.selectClassTransformer(className);
+            if (classTransformer != null) {
+                ClassPool cp = ClassPool.getDefault();
+                CtClass cc = cp.makeClass(new ByteArrayInputStream(classfileBuffer));
+                byte[] classData = classTransformer.transform(cc);
+                if (classData != null) {
+                    return classData;
+                }
             }
         } catch (Throwable e) {
             appender.out_println("transform failed: className=" + className + ", loader=" + loader);
