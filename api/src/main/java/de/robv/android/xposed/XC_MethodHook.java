@@ -2,7 +2,7 @@ package de.robv.android.xposed;
 
 import de.robv.android.xposed.callbacks.XCallback;
 
-import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 
 public abstract class XC_MethodHook extends XCallback {
 
@@ -29,7 +29,7 @@ public abstract class XC_MethodHook extends XCallback {
 
 	public static class MethodHookParam {
 		/** Description of the hooked method */
-		public Member method;
+		public Method method;
 		/** The <code>this</code> reference for an instance method, or null for static methods */
 		public Object thisObject;
 		/** Arguments to the method call */
@@ -74,13 +74,6 @@ public abstract class XC_MethodHook extends XCallback {
 			this.throwable = throwable;
 			this.result = null;
 			this.returnEarly = true;
-		}
-
-		/** Returns the result of the method call, or throws the Throwable caused by it */
-		public Object getResultOrThrowable() throws Throwable {
-			if (throwable != null)
-				throw throwable;
-			return result;
 		}
 	}
 }

@@ -23,18 +23,27 @@ public class LicensingTransformer extends XC_ClassInitializerHook implements Cla
 
     @Override
     public byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
+        if (classBeingRedefined != null) {
+            fakeLicense(classBeingRedefined);
+        }
+
         return XposedHookBuilder.createBuilder(cc, appender).hookClassInitializer(this).build();
     }
 
     @Override
-    protected void afterHookedClassInitializer(ClassInitializerHookParam param) throws Throwable {
-        super.afterHookedClassInitializer(param);
-        int build_type = XposedHelpers.getStaticIntField(param.thisClass, "build_type");
-        build_type |= FLAG_AIR_GAP;
-        XposedHelpers.setStaticIntField(param.thisClass, "build_type", build_type);
+    protected void afterHookedClassInitializer(Class<?> thisClass) throws Throwable {
+        super.afterHookedClassInitializer(thisClass);
 
-        int license_validity = XposedHelpers.getStaticIntField(param.thisClass, "license_validity");
+        fakeLicense(thisClass);
+    }
+
+    private void fakeLicense(Class<?> thisClass) {
+        int build_type = XposedHelpers.getStaticIntField(thisClass, "build_type");
+        build_type |= FLAG_AIR_GAP;
+        XposedHelpers.setStaticIntField(thisClass, "build_type", build_type);
+
+        int license_validity = XposedHelpers.getStaticIntField(thisClass, "license_validity");
         license_validity += (365 * 10); // 10 years
-        XposedHelpers.setStaticIntField(param.thisClass, "license_validity", license_validity);
+        XposedHelpers.setStaticIntField(thisClass, "license_validity", license_validity);
     }
 }

@@ -4,7 +4,7 @@ import com.fuzhu8.inspector.advisor.Hookable;
 import de.robv.android.xposed.XC_ConstructorHook;
 import de.robv.android.xposed.XposedBridge;
 
-import java.lang.reflect.Member;
+import java.lang.reflect.Constructor;
 
 /**
  * @author zhkl0228
@@ -20,26 +20,22 @@ public class XposedConstructorHook extends XC_ConstructorHook {
 	}
 
 	@Override
-	protected void beforeHookedConstructor(ConstructorBeforeHookParam param) {
+	protected void beforeHookedConstructor(Constructor<?> constructor, Class<?> thisClass) {
 		try {
-			super.beforeHookedConstructor(param);
+			super.beforeHookedConstructor(constructor, thisClass);
 
-			Member hooked = param.constructor;
-
-			handler.handleBefore(hooked, param.thisClass, new Object[0]);
+			handler.handleBefore(constructor, thisClass, new Object[0]);
 		} catch(Throwable t) {
 			XposedBridge.log(t);
 		}
 	}
 
 	@Override
-	protected void afterHookedConstructor(ConstructorAfterHookParam param) {
+	protected void afterHookedConstructor(Constructor<?> constructor, Object thisObject) {
 		try {
-			super.afterHookedConstructor(param);
+			super.afterHookedConstructor(constructor, thisObject);
 
-			Member hooked = param.constructor;
-
-			handler.handleAfter(hooked, param.thisObject, new Object[0], null);
+			handler.handleAfter(constructor, thisObject, new Object[0], null);
 		} catch(Throwable t) {
 			XposedBridge.log(t);
 		}

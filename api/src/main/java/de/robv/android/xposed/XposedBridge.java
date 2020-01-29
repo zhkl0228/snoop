@@ -258,26 +258,20 @@ public final class XposedBridge {
 			return;
 		}
 
-		if (originalMethod instanceof Constructor) {
-			final XC_ConstructorHook.ConstructorBeforeHookParam param = new XC_ConstructorHook.ConstructorBeforeHookParam ();
-			param.constructor = (Constructor<?>) originalMethod;
-			param.thisClass = (Class<?>) thisObject;
+		Class<?> thisClass = (Class<?>) thisObject;
 
+		int beforeIdx = 0;
+		if (originalMethod instanceof Constructor) {
 			// call "before method" callbacks
-			int beforeIdx = 0;
 			do {
 				XC_ConstructorHook hook = (XC_ConstructorHook) callbacksSnapshot[beforeIdx];
-				hook.beforeHookedConstructor(param);
+				hook.beforeHookedConstructor((Constructor<?>) originalMethod, thisClass);
 			} while (++beforeIdx < callbacksLength);
 		} else {
-			final XC_ClassInitializerHook.ClassInitializerHookParam param = new XC_ClassInitializerHook.ClassInitializerHookParam();
-			param.thisClass = (Class<?>) thisObject;
-
 			// call "before method" callbacks
-			int beforeIdx = 0;
 			do {
 				XC_ClassInitializerHook hook = (XC_ClassInitializerHook) callbacksSnapshot[beforeIdx];
-				hook.beforeHookedClassInitializer(param);
+				hook.beforeHookedClassInitializer(thisClass);
 			} while (++beforeIdx < callbacksLength);
 		}
 	}
@@ -291,26 +285,18 @@ public final class XposedBridge {
 			return;
 		}
 
+		int afterIdx = callbacksLength - 1;
 		if (originalMethod instanceof Constructor) {
-			final XC_ConstructorHook.ConstructorAfterHookParam param = new XC_ConstructorHook.ConstructorAfterHookParam();
-			param.constructor = (Constructor<?>) originalMethod;
-			param.thisObject = thisObject;
-
 			// call "after method" callbacks
-			int afterIdx = callbacksLength - 1;
 			do {
 				XC_ConstructorHook hook = (XC_ConstructorHook) callbacksSnapshot[afterIdx];
-				hook.afterHookedConstructor(param);
+				hook.afterHookedConstructor((Constructor<?>) originalMethod, thisObject);
 			} while (--afterIdx >= 0);
 		} else {
-			final XC_ClassInitializerHook.ClassInitializerHookParam param = new XC_ClassInitializerHook.ClassInitializerHookParam();
-			param.thisClass = (Class<?>) thisObject;
-
 			// call "after method" callbacks
-			int afterIdx = callbacksLength - 1;
 			do {
 				XC_ClassInitializerHook hook = (XC_ClassInitializerHook) callbacksSnapshot[afterIdx];
-				hook.afterHookedClassInitializer(param);
+				hook.afterHookedClassInitializer((Class<?>) thisObject);
 			} while (--afterIdx >= 0);
 		}
 	}

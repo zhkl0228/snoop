@@ -4,6 +4,7 @@ import de.robv.android.xposed.*;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Constructor;
 
 /**
  * @author zhkl0228
@@ -40,27 +41,27 @@ public class TestHello extends TestCase {
 			}
 		}).hook(cc.getDeclaredConstructor(new CtClass[0]), new XC_ConstructorHook() {
 			@Override
-			protected void beforeHookedConstructor(ConstructorBeforeHookParam param) throws Throwable {
-				super.beforeHookedConstructor(param);
-				System.out.println("beforeHookedConstructor constructor=" + param.constructor + ", thisClass=" + param.thisClass);
+			protected void beforeHookedConstructor(Constructor<?> constructor, Class<?> thisClass) throws Throwable {
+				super.beforeHookedConstructor(constructor, thisClass);
+				System.out.println("beforeHookedConstructor constructor=" + constructor + ", thisClass=" + thisClass);
 			}
 
 			@Override
-			protected void afterHookedConstructor(ConstructorAfterHookParam param) throws Throwable {
-				super.afterHookedConstructor(param);
-				System.out.println("afterHookedConstructor constructor=" + param.constructor + ", thisObject=" + param.thisObject);
+			protected void afterHookedConstructor(Constructor<?> constructor, Object thisObject) throws Throwable {
+				super.afterHookedConstructor(constructor, thisObject);
+				System.out.println("afterHookedConstructor constructor=" + constructor + ", thisObject=" + thisObject);
 			}
 		}).hookClassInitializer(new XC_ClassInitializerHook() {
 			@Override
-			protected void beforeHookedClassInitializer(ClassInitializerHookParam param) throws Throwable {
-				super.beforeHookedClassInitializer(param);
-				System.out.println("beforeHookedClassInitializer thisClass=" + param.thisClass);
+			protected void beforeHookedClassInitializer(Class<?> thisClass) throws Throwable {
+				super.beforeHookedClassInitializer(thisClass);
+				System.out.println("beforeHookedClassInitializer thisClass=" + thisClass);
 			}
 
 			@Override
-			protected void afterHookedClassInitializer(ClassInitializerHookParam param) throws Throwable {
-				super.afterHookedClassInitializer(param);
-				System.out.println("afterHookedClassInitializer thisClass=" + param.thisClass);
+			protected void afterHookedClassInitializer(Class<?> thisClass) throws Throwable {
+				super.afterHookedClassInitializer(thisClass);
+				System.out.println("afterHookedClassInitializer thisClass=" + thisClass);
 			}
 		}).build();
 		assertNotNull(classData);

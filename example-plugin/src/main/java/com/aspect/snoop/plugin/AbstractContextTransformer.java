@@ -21,14 +21,21 @@ public class AbstractContextTransformer extends XC_ClassInitializerHook implemen
 
     @Override
     public byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
+        if (classBeingRedefined != null) {
+            findAppVer(classBeingRedefined);
+        }
         return XposedHookBuilder.createBuilder(cc, appender).hookClassInitializer(this).build();
     }
 
     @Override
-    protected void afterHookedClassInitializer(ClassInitializerHookParam param) throws Throwable {
-        super.afterHookedClassInitializer(param);
+    protected void afterHookedClassInitializer(Class<?> thisClass) throws Throwable {
+        super.afterHookedClassInitializer(thisClass);
 
-        String app_ver = String.valueOf(XposedHelpers.getStaticObjectField(param.thisClass, "app_ver"));
+        findAppVer(thisClass);
+    }
+
+    private void findAppVer(Class<?> thisClass) {
+        String app_ver = String.valueOf(XposedHelpers.getStaticObjectField(thisClass, "app_ver"));
         appender.out_println("Jeb version found: " + app_ver);
     }
 }

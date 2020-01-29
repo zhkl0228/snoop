@@ -2,12 +2,12 @@ package com.aspect.snoop.plugin;
 
 import com.fuzhu8.inspector.plugin.AbstractPlugin;
 import com.fuzhu8.inspector.plugin.Appender;
-import com.fuzhu8.inspector.plugin.InspectorPlugin;
+import com.fuzhu8.inspector.plugin.SnoopPlugin;
 import com.fuzhu8.inspector.plugin.Plugin;
 
 import java.lang.instrument.Instrumentation;
 
-@InspectorPlugin
+@SnoopPlugin
 @SuppressWarnings("unused")
 public class JebPlugin extends AbstractPlugin implements Plugin {
 

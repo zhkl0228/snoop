@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import com.fuzhu8.inspector.plugin.AbstractPlugin;
 import com.fuzhu8.inspector.plugin.Appender;
-import com.fuzhu8.inspector.plugin.InspectorPlugin;
+import com.fuzhu8.inspector.plugin.SnoopPlugin;
 import com.fuzhu8.inspector.plugin.Plugin;
 
 import java.lang.instrument.Instrumentation;
@@ -57,7 +57,7 @@ abstract class PluginSource {
         final Iterator<Class<?>> itr = pluginClasses.iterator();
         while (itr.hasNext()) {
             Class<?> pluginClass = itr.next();
-            if (pluginClass.isAnnotationPresent(InspectorPlugin.class)) {
+            if (pluginClass.isAnnotationPresent(SnoopPlugin.class)) {
                 if (AbstractPlugin.class.isAssignableFrom(pluginClass)) {
                     Constructor<?> constructor = pluginClass.getDeclaredConstructor(Instrumentation.class, Appender.class);
                     constructor.setAccessible(true);

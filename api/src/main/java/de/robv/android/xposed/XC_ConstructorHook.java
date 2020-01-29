@@ -13,21 +13,8 @@ public abstract class XC_ConstructorHook extends XCallback {
 		super(priority);
 	}
 
-	protected void beforeHookedConstructor(ConstructorBeforeHookParam param) throws Throwable {}
+	protected void beforeHookedConstructor(Constructor<?> constructor, Class<?> thisClass) throws Throwable {}
 
-	protected void afterHookedConstructor(ConstructorAfterHookParam param) throws Throwable {}
+	protected void afterHookedConstructor(Constructor<?> constructor, Object thisObject) throws Throwable {}
 
-	public static class ConstructorBeforeHookParam {
-
-		public Constructor<?> constructor;
-		public Class<?> thisClass;
-
-	}
-
-	public static class ConstructorAfterHookParam {
-
-		public Constructor<?> constructor;
-		public Object thisObject;
-
-	}
 }

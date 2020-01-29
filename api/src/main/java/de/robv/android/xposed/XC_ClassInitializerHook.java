@@ -11,13 +11,7 @@ public abstract class XC_ClassInitializerHook extends XCallback {
 		super(priority);
 	}
 
-	protected void beforeHookedClassInitializer(ClassInitializerHookParam param) throws Throwable {}
+	protected void beforeHookedClassInitializer(Class<?> thisClass) throws Throwable {}
 
-	protected void afterHookedClassInitializer(ClassInitializerHookParam param) throws Throwable {}
-
-	public static class ClassInitializerHookParam {
-
-		public Class<?> thisClass;
-
-	}
+	protected void afterHookedClassInitializer(Class<?> thisClass) throws Throwable {}
 }
