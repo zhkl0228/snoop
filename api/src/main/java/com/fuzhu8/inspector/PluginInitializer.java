@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@SuppressWarnings("unused")
 class PluginInitializer implements Appender, ClassNameFilter {
 
     private final Instrumentation instrumentation;
@@ -19,6 +18,7 @@ class PluginInitializer implements Appender, ClassNameFilter {
         this.instrumentation = instrumentation;
     }
 
+    @SuppressWarnings("unused")
     final void initialize(File pluginJar) {
         PluginSource pluginSource = PluginSources.jarSource(pluginJar, this);
         initializePluginSource(pluginSource, instrumentation, this);
@@ -51,8 +51,8 @@ class PluginInitializer implements Appender, ClassNameFilter {
     @Override
     public boolean accept(String className) {
         boolean isApi = className.startsWith("javassist.") ||
-                className.startsWith("com.fuzhu8.") ||
-                className.startsWith("de.robv.android.");
+                className.startsWith("com.fuzhu8.inspector.") ||
+                className.startsWith("de.robv.android.xposed.");
         return !isApi;
     }
 

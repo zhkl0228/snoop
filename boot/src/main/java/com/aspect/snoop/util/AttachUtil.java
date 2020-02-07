@@ -38,8 +38,6 @@ import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
-import cn.banny.utils.StringUtils;
-
 /**
  * Utility methods for launching JVMs and using the Attach API.
  * 
@@ -68,7 +66,7 @@ public class AttachUtil {
          */
         String libraryPath = System.getProperty("java.library.path");
         String agentArgs = agentJar.getClasspath() + "|0|" + SnoopSession.findLookAndFeel() + "|false|" +
-        		(StringUtils.isEmpty(mainClass) ? "" : mainClass) + '|' + pid + '|' + (StringUtils.isEmpty(libraryPath) ? "" : libraryPath);
+        		(mainClass == null ? "" : mainClass) + '|' + pid + '|' + (libraryPath == null ? "" : libraryPath);
         logger.debug("loadAgentInOtherVM agentArgs=" + agentArgs + ", libraryPath=" + libraryPath);
         vm.loadAgent(agentJar.getAgentJarPath(), agentArgs);
         vm.detach();
@@ -105,7 +103,7 @@ public class AttachUtil {
                 "|" + session.getGuiDelay()  +
                 "|" + session.getLookAndFeel() +
                 "|false|" + mainClass +
-                "|" + (ThreadLocalRandom.current().nextInt(1000) + 100) + "|" + (StringUtils.isEmpty(libraryPath) ? "" : libraryPath);
+                "|" + (ThreadLocalRandom.current().nextInt(1000) + 100) + "|" + (libraryPath == null ? "" : libraryPath);
         
         arguments.add(agent);
 

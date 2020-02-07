@@ -1,13 +1,11 @@
 package com.fuzhu8.inspector.bytecode;
 
-import cn.banny.utils.StringUtils;
 import com.fuzhu8.inspector.Inspector;
 import com.fuzhu8.inspector.ModuleContext;
 import com.fuzhu8.inspector.advisor.AbstractAdvisor;
 import com.fuzhu8.inspector.advisor.Hooker;
 import com.sun.jna.Pointer;
 import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
 import javassist.ClassPool;
 import javassist.CtClass;
 
@@ -43,7 +41,7 @@ public abstract class AbstractDexFileManager<T> extends AbstractAdvisor implemen
 		for(Class<?> clazz : context.getInstrumentation().getAllLoadedClasses()) {
 			try {
 				String name = clazz.getCanonicalName();
-				if(StringUtils.isEmpty(name)) {
+				if(name == null) {
 					continue;
 				}
 				
@@ -51,7 +49,7 @@ public abstract class AbstractDexFileManager<T> extends AbstractAdvisor implemen
 					continue;
 				}
 				
-				hookAllMember(clazz, inspector);
+				hookAllMember(clazz);
 				hooked.add(name);
 			} catch(Exception t) {
 				inspector.println(t);
@@ -63,7 +61,7 @@ public abstract class AbstractDexFileManager<T> extends AbstractAdvisor implemen
 	
 	protected abstract T createPrintCallHook();
 
-	protected final void hookAllMember(Class<?> clazz, Inspector inspector) {
+	protected final void hookAllMember(Class<?> clazz) {
 		T dumpCallback = createPrintCallHook();
 
 		for(Method method : clazz.getDeclaredMethods()) {
@@ -105,17 +103,8 @@ public abstract class AbstractDexFileManager<T> extends AbstractAdvisor implemen
 	protected void executeHook() {
 	}
 	
-	private final List<ClassLoaderListener> listeners = new ArrayList<>();
-	
 	@Override
 	public void addClassLoaderListener(ClassLoaderListener listener) {
-		this.listeners.add(listener);
-	}
-	
-	private void notifyClassLoader(ClassLoader classLoader) {
-		for(ClassLoaderListener listener : this.listeners) {
-			listener.notifyClassLoader(classLoader);
-		}
 	}
 
     public List<Class<?>> getLoadedClasses() {

@@ -1,6 +1,5 @@
 package com.fuzhu8.inspector.advisor;
 
-import cn.banny.utils.StringUtils;
 import com.alibaba.dcm.DnsCache;
 import com.alibaba.dcm.DnsCacheEntry;
 import com.alibaba.dcm.DnsCacheManipulator;
@@ -166,10 +165,10 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 		boolean added = false;
 		for(Class<?> clazz : dexFileManager.getLoadedClasses()) {
 			String name = clazz.getCanonicalName();
-			if(StringUtils.isEmpty(name)) {
+			if(name == null) {
 				continue;
 			}
-			
+
 			if(filter == null || name.contains(filter)) {
 				println(name);
 				added = true;
@@ -746,7 +745,7 @@ public abstract class AbstractInspector extends AbstractAdvisor implements
 			dos.writeUTF(operatingSystemMXBean.getName() + '/' + operatingSystemMXBean.getArch());
 			dos.writeByte(0);
 			dos.writeInt(pid);
-			dos.writeUTF(StringUtils.isEmpty(mainClass) ? Integer.toString(pid) : mainClass);
+			dos.writeUTF(mainClass == null || mainClass.trim().length() < 1 ? Integer.toString(pid) : mainClass);
 			
 			packet.setData(baos.toByteArray());
 			packet.setLength(baos.size());

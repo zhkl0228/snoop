@@ -1,11 +1,4 @@
-/**
- * 
- */
 package com.fuzhu8.inspector.script;
-
-import org.keplerproject.luajava.LuaException;
-import org.keplerproject.luajava.LuaState;
-import org.keplerproject.luajava.LuaStateFactory;
 
 import com.fuzhu8.inspector.Inspector;
 import com.fuzhu8.inspector.ModuleContext;
@@ -13,6 +6,9 @@ import com.fuzhu8.inspector.advisor.AbstractAdvisor;
 import com.fuzhu8.inspector.advisor.Hooker;
 import com.fuzhu8.inspector.bytecode.DexFileManager;
 import com.fuzhu8.inspector.script.hook.HookFunction;
+import org.keplerproject.luajava.LuaException;
+import org.keplerproject.luajava.LuaState;
+import org.keplerproject.luajava.LuaStateFactory;
 
 /**
  * @author zhkl0228
