@@ -21,6 +21,11 @@ public class RuntimeTransformer extends XC_MethodHook implements ClassTransforme
     }
 
     @Override
+    public String getClassName() {
+        return "java/lang/Runtime";
+    }
+
+    @Override
     public byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
         for (CtMethod method : cc.getDeclaredMethods("exec")) {
             CtClass[] parameterTypes = method.getParameterTypes();

@@ -20,6 +20,11 @@ public class AbstractContextTransformer extends XC_ClassInitializerHook implemen
     }
 
     @Override
+    public String getClassName() {
+        return "com/pnfsoftware/jeb/client/AbstractContext";
+    }
+
+    @Override
     public byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
         if (classBeingRedefined != null) {
             findAppVer(classBeingRedefined);

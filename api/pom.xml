@@ -7,6 +7,7 @@
 		<version>2.0.1</version>
 	</parent>
 	<artifactId>snoop-api</artifactId>
+	<version>2.0.2</version>
 	<dependencies>
 		<dependency>
 			<groupId>org.javassist</groupId>

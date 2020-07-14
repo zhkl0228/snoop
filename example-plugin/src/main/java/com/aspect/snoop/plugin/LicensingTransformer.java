@@ -22,6 +22,11 @@ public class LicensingTransformer extends XC_ClassInitializerHook implements Cla
     }
 
     @Override
+    public String getClassName() {
+        return "com/pnfsoftware/jeb/client/Licensing";
+    }
+
+    @Override
     public byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
         if (classBeingRedefined != null) {
             fakeLicense(classBeingRedefined);

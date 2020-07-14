@@ -23,6 +23,11 @@ public class JebNetTransformer implements ClassTransformer {
     }
 
     @Override
+    public String getClassName() {
+        return "com/pnfsoftware/jeb/client/JebNet";
+    }
+
+    @Override
     public byte[] transform(Class<?> classBeingRedefined, CtClass cc) throws NotFoundException, CannotCompileException, IOException {
         CtMethod[] methods = cc.getDeclaredMethods("post");
         for (CtMethod method : methods) {

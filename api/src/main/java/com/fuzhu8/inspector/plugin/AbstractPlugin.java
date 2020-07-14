@@ -32,8 +32,8 @@ public abstract class AbstractPlugin implements Plugin {
 
     private final Map<String, ClassTransformer> transformerMap = new HashMap<>();
 
-    protected final void registerClassTransformer(String className, ClassTransformer transformer) {
-        transformerMap.put(className, transformer);
+    protected final void registerClassTransformer(ClassTransformer transformer) {
+        transformerMap.put(transformer.getClassName(), transformer);
     }
 
     @Override
