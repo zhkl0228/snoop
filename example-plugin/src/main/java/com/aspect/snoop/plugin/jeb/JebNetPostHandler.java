@@ -28,7 +28,7 @@ public class JebNetPostHandler extends XC_MethodHook {
         }
     }
 
-    private static byte[] VC = new byte[] { 69, 103, -94, -103, 95, -125, -15, 16 };
+    private static final byte[] VC = new byte[] { 69, 103, -94, -103, 95, -125, -15, 16 };
 
     private void dumpRequest(String request, String response) {
         try {

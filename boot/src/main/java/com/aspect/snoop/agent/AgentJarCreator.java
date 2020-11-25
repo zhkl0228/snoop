@@ -46,13 +46,11 @@ public class AgentJarCreator {
     private static String nl = System.getProperty("line.separator");
 
     public static final String[] jarsToNotBootClasspath = {
-      "bsh-2.0b4.jar",
-      "jython.jar",
       "appframework-1.0.3.jar",
       "swing-worker-1.1.jar",
       "xom-1.1.jar",
-      "rsyntaxtextarea.jar",
-      "xstream-1.4.6.jar"
+      "rsyntaxtextarea-1.4.1.jar",
+      "xstream-1.4.14-jdk7.jar"
     };
 
     private static Log logger = LogFactory.getLog(AgentJarCreator.class);
