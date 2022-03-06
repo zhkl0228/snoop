@@ -31,7 +31,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>0.5.0</version>
+				<version>3.0.0</version>
 				<goals>
 					<goal>exec</goal>
 				</goals>
@@ -44,7 +44,6 @@
 						<phase>verify</phase>
 						<configuration>
 							<executable>java</executable>
-							<classpathWithMe>true</classpathWithMe>
 							<classpathScope>compile</classpathScope>
 							<arguments>
 								<argument>-Djava.library.path=${project.build.directory}</argument>
