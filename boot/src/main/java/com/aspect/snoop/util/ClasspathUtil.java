@@ -341,7 +341,7 @@ public class ClasspathUtil {
         return classes;
     }
 
-    public static String[] asStrings(Class[] types) throws ClassNotFoundException {
+    public static String[] asStrings(Class<?>[] types) throws ClassNotFoundException {
 
         String[] classes = new String[types.length];
 
@@ -362,12 +362,12 @@ public class ClasspathUtil {
 
         classpath = classpath.replaceAll(" ", "%20");
         
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         int firstLineLength = 72-("Class-Path: ".length() + 1);
 
         String s = classpath.substring(0,firstLineLength);
-        sb.append(s + " \r\n");
+        sb.append(s).append(" \r\n");
 
         int index = firstLineLength;
 
@@ -394,10 +394,9 @@ public class ClasspathUtil {
         return sb.toString();
     }
 
-    private static ArrayList removeDuplicates(List<String> classes) {
-        Set set = new LinkedHashSet();
-        set.addAll(classes);
-        return new ArrayList(set);
+    private static ArrayList<String> removeDuplicates(List<String> classes) {
+        Set<String> set = new LinkedHashSet<>(classes);
+        return new ArrayList<>(set);
     }
 
     public static boolean isJavaOrSunClass(String cls) {

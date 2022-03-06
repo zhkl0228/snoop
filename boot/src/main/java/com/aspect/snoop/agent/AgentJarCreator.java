@@ -19,6 +19,10 @@
 
 package com.aspect.snoop.agent;
 
+import com.aspect.snoop.util.RandomUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -36,24 +40,19 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.aspect.snoop.util.RandomUtil;
-
 public class AgentJarCreator {
 
-    private static String nl = System.getProperty("line.separator");
+    private static final String nl = System.lineSeparator();
 
     public static final String[] jarsToNotBootClasspath = {
       "appframework-1.0.3.jar",
       "swing-worker-1.1.jar",
       "xom-1.1.jar",
       "rsyntaxtextarea-1.4.1.jar",
-      "xstream-1.4.14-jdk7.jar"
+      "xstream-1.4.19.jar"
     };
 
-    private static Log logger = LogFactory.getLog(AgentJarCreator.class);
+    private static final Log logger = LogFactory.getLog(AgentJarCreator.class);
 
     public static AgentJar createAgentJar(boolean attachingOnStartup) throws IOException {
 

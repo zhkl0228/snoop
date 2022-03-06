@@ -23,7 +23,7 @@ import java.io.InputStream;
 public class LEDataInputStream implements DataInput {
 
     /** work array for buffering input */
-    private byte w[];
+    private final byte[] w;
 
     /** to get at the big-Endian methods of a basic DataInputStream */
     protected DataInputStream d;
@@ -31,9 +31,6 @@ public class LEDataInputStream implements DataInput {
     /** to get at the a basic readBytes method */
     protected InputStream in;
 
-    /**
-     * @throws IOException
-     */
     public final void close() throws IOException {
         d.close();
     }
@@ -52,7 +49,6 @@ public class LEDataInputStream implements DataInput {
      * @param len
      *        count of bytes ot ade
      * @return how many bytes read
-     * @throws IOException
      */
     public final int read(byte b[], int off, int len) throws IOException {
         // For efficiency, we avoid one layer of wrapper
@@ -81,7 +77,6 @@ public class LEDataInputStream implements DataInput {
      * like DataInputStream.readChar except little endian.
      *
      * @return little endian 16-bit unicode char from the stream
-     * @throws IOException
      */
     public final char readChar() throws IOException {
         d.readFully(w, 0, 2);
@@ -115,7 +110,6 @@ public class LEDataInputStream implements DataInput {
      * like DataInputStream.readDouble except little endian.
      *
      * @return little endian IEEE double from the datastream
-     * @throws IOException
      */
     public final double readDouble() throws IOException {
         return Double.longBitsToDouble(readLong());
@@ -125,7 +119,6 @@ public class LEDataInputStream implements DataInput {
      * like DataInputStream.readFloat except little endian.
      *
      * @return little endian IEEE float from the datastream
-     * @throws IOException
      */
     public final float readFloat() throws IOException {
         return Float.intBitsToFloat(readInt());
