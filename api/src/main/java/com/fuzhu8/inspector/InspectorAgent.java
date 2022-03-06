@@ -38,7 +38,7 @@ public class InspectorAgent {
         }
     }
 
-    private static void turnOffSecurity() {
+    public static void turnOffSecurity() {
         /*
          * Test if we're inside an applet. We should be inside
          * an applet if the System property ("package.restrict.access.sun")

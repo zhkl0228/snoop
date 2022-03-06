@@ -50,10 +50,10 @@ class PluginInitializer implements Appender, ClassNameFilter {
 
     @Override
     public boolean accept(String className) {
-        boolean isApi = className.startsWith("javassist.") ||
+        boolean api = className.startsWith("javassist.") ||
                 className.startsWith("com.fuzhu8.inspector.") ||
                 className.startsWith("de.robv.android.xposed.");
-        return !isApi;
+        return !api;
     }
 
     @Override

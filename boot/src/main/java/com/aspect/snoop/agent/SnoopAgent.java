@@ -21,6 +21,7 @@ package com.aspect.snoop.agent;
 
 import com.aspect.snoop.agent.manager.InstrumentationManager;
 import com.aspect.snoop.ui.JavaSnoopView;
+import com.fuzhu8.inspector.InspectorAgent;
 import de.robv.android.xposed.XposedBridge;
 
 import javax.swing.*;
@@ -33,7 +34,6 @@ import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.jar.JarFile;
 
 public class SnoopAgent {
@@ -53,7 +53,7 @@ public class SnoopAgent {
     }
 
     public static void agentmain(String args, Instrumentation instrumentation) {
-        turnOffSecurity();
+        InspectorAgent.turnOffSecurity();
         install(args,instrumentation);
     }
 
@@ -110,7 +110,7 @@ public class SnoopAgent {
         XposedBridge.initialize(inst);
         AgentLogger.debug("Done with manager, XposedBridge loaded by: " + XposedBridge.class.getClassLoader());
 
-        turnOffSecurity();
+        InspectorAgent.turnOffSecurity();
 
         AgentLogger.debug("Turned off security...");
 
@@ -215,41 +215,6 @@ public class SnoopAgent {
                 view.setVisible(true);
             }
         });
-    }
-
-	private static void turnOffSecurity() {
-        /*
-         * Test if we're inside an applet. We should be inside
-         * an applet if the System property ("package.restrict.access.sun")
-         * is not null and is set to true.
-         */
-
-        boolean restricted = System.getProperty("package.restrict.access.sun") != null;
-
-        /*
-         * If we're in an applet, we need to change the System properties so
-         * as to avoid class restrictions. We go through the current properties
-         * and remove anything related to package restriction.
-         */
-        if ( restricted ) {
-
-            Properties newProps = new Properties();
-
-            Properties sysProps = System.getProperties();
-
-            for(String prop : sysProps.stringPropertyNames()) {
-                if ( prop != null && ! prop.startsWith("package.restrict.") ) {
-                    newProps.setProperty(prop,sysProps.getProperty(prop));
-                }
-            }
-
-            System.setProperties(newProps);
-        }
-
-        /*
-         * Should be the final nail in (your) coffin.
-         */
-        System.setSecurityManager(null);
     }
 
     public static Instrumentation getInstrumentation() {
