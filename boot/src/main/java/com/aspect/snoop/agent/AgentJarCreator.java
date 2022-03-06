@@ -47,8 +47,8 @@ public class AgentJarCreator {
     public static final String[] jarsToNotBootClasspath = {
       "appframework-1.0.3.jar",
       "swing-worker-1.1.jar",
-      "xom-1.1.jar",
-      "rsyntaxtextarea-1.4.1.jar",
+      "xom-1.3.7.jar",
+      "rsyntaxtextarea-3.1.6.jar",
       "xstream-1.4.19.jar"
     };
 
