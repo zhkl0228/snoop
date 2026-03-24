@@ -26,8 +26,8 @@ import java.util.List;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SnoopSession implements Serializable {
 
@@ -70,7 +70,7 @@ public class SnoopSession implements Serializable {
         output = "";
         guiDelay = defaultGuiDelay;
         clobberLookAndFeel = false;
-        functionHooks = new ArrayList<FunctionHook>();
+        functionHooks = new ArrayList<>();
 
     }
 
@@ -96,8 +96,8 @@ public class SnoopSession implements Serializable {
     /**
      * @param snoopSessionFilename the snoopSessionFilename to set
      */
-    public void setSnoopSessionFilename(String spySessionFilename) {
-        this.snoopSessionFilename = spySessionFilename;
+    public void setSnoopSessionFilename(String snoopSessionFilename) {
+        this.snoopSessionFilename = snoopSessionFilename;
     }
 
     /**
@@ -231,14 +231,14 @@ public class SnoopSession implements Serializable {
         return findLookAndFeel();
     }
     
-    private static final Log log = LogFactory.getLog(SnoopSession.class);
+    private static final Logger log = LoggerFactory.getLogger(SnoopSession.class);
     
     public static String findLookAndFeel() {
     	for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-    		log.debug("findLookAndFeel name=" + info.getName() + ", className=" + info.getClassName());
+    		log.debug("findLookAndFeel name={}, className={}", info.getName(), info.getClassName());
     		
             if ("Nimbus".equals(info.getName())) {
-                // return info.getClassName();
+                 return info.getClassName();
             }
         }
 

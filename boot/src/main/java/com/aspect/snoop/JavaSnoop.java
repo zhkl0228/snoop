@@ -18,8 +18,8 @@
  */
 package com.aspect.snoop;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
 
@@ -34,7 +34,7 @@ import java.util.Properties;
  */
 public class JavaSnoop extends SingleFrameApplication {
 	
-	private static final Log log = LogFactory.getLog(JavaSnoop.class);
+	private static final Logger log = LoggerFactory.getLogger(JavaSnoop.class);
 
     public static final String VERSION = "version";
     public static final String SEPARATE_VM = "exec_separate_vm";

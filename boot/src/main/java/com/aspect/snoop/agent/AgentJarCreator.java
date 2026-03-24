@@ -20,20 +20,14 @@
 package com.aspect.snoop.agent;
 
 import com.aspect.snoop.util.RandomUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -44,15 +38,25 @@ public class AgentJarCreator {
 
     private static final String nl = System.lineSeparator();
 
-    public static final String[] jarsToNotBootClasspath = {
-      "appframework-1.0.3.jar",
-      "swing-worker-1.1.jar",
-      "xom-1.3.7.jar",
-      "rsyntaxtextarea-3.1.6.jar",
-      "xstream-1.4.19.jar"
+    private static final String[] jarsToNotBootClasspath = {
+      "appframework",
+      "swing-worker",
+      "xom",
+      "rsyntaxtextarea",
+      "xstream"
     };
 
-    private static final Log logger = LogFactory.getLog(AgentJarCreator.class);
+    public static boolean matchesArtifact(String path) {
+        String name = path.substring(Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\')) + 1);
+        for (String artifactId : jarsToNotBootClasspath) {
+            if (name.startsWith(artifactId + "-") && name.endsWith(".jar")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(AgentJarCreator.class);
 
     public static AgentJar createAgentJar(boolean attachingOnStartup) throws IOException {
 
@@ -78,7 +82,7 @@ public class AgentJarCreator {
             }
         }
         
-        logger.debug("createAgentJar url=" + url + ", file=" + file + ", testing=" + testing + ", attachingOnStartup=" + attachingOnStartup);
+        logger.debug("createAgentJar url={}, file={}, testing={}, attachingOnStartup={}", url, file, testing, attachingOnStartup);
 
         if (testing) {
             // this is a test environment, get it from the working
@@ -94,21 +98,17 @@ public class AgentJarCreator {
 
         // step #1: create a Manifest that uses the Agent
 
-        StringBuilder sbuf = new StringBuilder();
-
-        sbuf.append("Manifest-Version: 1.0").append(nl);
-
-        /*
-         * Doesn't hurt to add both.
-         */
-        sbuf.append("Premain-Class: ").append(SnoopAgent.class.getName()).append(nl);
-        sbuf.append("Agent-Class: ").append(SnoopAgent.class.getName()).append(nl);
-        
-        sbuf.append("Can-Redefine-Classes: true").append(nl);
-        sbuf.append("Can-Retransform-Classes: true").append(nl);
-
         Collection<String> classpathEntry = new HashSet<String>();
-        sbuf.append("Boot-Class-Path: ").append(getJarPaths(testing, "Boot-Class-Path: ".length(), classpathEntry));
+        String sbuf = "Manifest-Version: 1.0" + nl +
+
+                /*
+                 * Doesn't hurt to add both.
+                 */
+                "Premain-Class: " + SnoopAgent.class.getName() + nl +
+                "Agent-Class: " + SnoopAgent.class.getName() + nl +
+                "Can-Redefine-Classes: true" + nl +
+                "Can-Retransform-Classes: true" + nl +
+                "Boot-Class-Path: " + getJarPaths(testing, "Boot-Class-Path: ".length(), classpathEntry);
 
         // step #2: unzip the jar we're using right now to modify
         File tmpDir;
@@ -128,7 +128,7 @@ public class AgentJarCreator {
         boolean success = tmpDir.mkdir();
 
         if ( ! success ) {
-            logger.error("Could not create dir: " + tmpDir.getAbsolutePath());
+            logger.error("Could not create dir: {}", tmpDir.getAbsolutePath());
         }
         
         unzip(file, tmpDir.getAbsolutePath());
@@ -147,7 +147,9 @@ public class AgentJarCreator {
             newManifestFile.deleteOnExit();
         }
 
-        new FileOutputStream(newManifestFile).write(sbuf.toString().getBytes());
+        try (OutputStream outputStream = Files.newOutputStream(newManifestFile.toPath())) {
+            outputStream.write(sbuf.getBytes());
+        }
 
         // step #4: zip it back up
         if ( ! testing ) {
@@ -167,7 +169,7 @@ public class AgentJarCreator {
 
     private static void zip(String zipFileName, String dir) throws IOException  {
         File dirObj = new File(dir);
-        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFileName));
+        ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(Paths.get(zipFileName)));
         addDir(dirObj.getAbsolutePath(), dirObj, out);
         out.close();
     }
@@ -207,14 +209,14 @@ public class AgentJarCreator {
     }
 
     public static void unzip(String zip, String dir) throws IOException {
-    	logger.debug("unzip zip=" + zip + ", dir=" + dir);
+    	logger.debug("unzip zip={}, dir={}", zip, dir);
 
         ZipFile zipFile = new ZipFile(zip);
-        Enumeration enumeration = zipFile.entries();
+        Enumeration<? extends  ZipEntry> enumeration = zipFile.entries();
 
         while (enumeration.hasMoreElements()) {
 
-            ZipEntry zipEntry = (ZipEntry) enumeration.nextElement();
+            ZipEntry zipEntry = enumeration.nextElement();
             BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(zipEntry));
             int size;
             byte[] buffer = new byte[2048];
@@ -234,7 +236,7 @@ public class AgentJarCreator {
 
             newFile.createNewFile();
             
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(newFile), buffer.length);
+            BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(newFile.toPath()), buffer.length);
 
             while ((size = bis.read(buffer, 0, buffer.length)) != -1) {
                 bos.write(buffer, 0, size);
@@ -255,10 +257,10 @@ public class AgentJarCreator {
 
                 String className = clazz.getSimpleName();
                 String classFileName = className + ".class";
-                String pathToThisClass = clazz.getResource(classFileName).toString();
+                String pathToThisClass = Objects.requireNonNull(clazz.getResource(classFileName)).toString();
 
                 int mark = pathToThisClass.indexOf("!") ;
-                String pathToManifest = pathToThisClass.toString().substring(0,mark+1) ;
+                String pathToManifest = pathToThisClass.substring(0,mark+1) ;
                 pathToManifest += "/META-INF/MANIFEST.MF" ;
                 Manifest m = new Manifest(new URL(pathToManifest).openStream());
 
@@ -270,13 +272,7 @@ public class AgentJarCreator {
                 StringBuilder cpBuff = new StringBuilder();
                 for(int i=0;i<entries.length;i++) {
                     String entry = entries[i];
-                    boolean shouldIgnore = false;
-                    for(String ignoreJar : jarsToNotBootClasspath) {
-                        if (entry.endsWith(ignoreJar)) {
-                            shouldIgnore = true;
-                            break;
-                        }
-                    }
+                    boolean shouldIgnore = matchesArtifact(entry);
                     
                     if ( ! shouldIgnore ) {
                         cpBuff.append(entry);
@@ -290,7 +286,7 @@ public class AgentJarCreator {
 
                 return getManifestRepresentation( (72-(nl.length()+prefixLength)), cp );
             } catch (IOException ex) {
-                logger.fatal(ex.getMessage(), ex);
+                logger.error(ex.getMessage(), ex);
             }
         }
 
@@ -305,7 +301,7 @@ public class AgentJarCreator {
         		continue;
         	}
 
-        	logger.debug("getJarPaths entry=" + entry);
+        	logger.debug("getJarPaths entry={}", entry);
         	
         	/*if(entry.contains("commons-logging") ||
         			entry.contains("javassist")) {
@@ -342,7 +338,7 @@ public class AgentJarCreator {
         int whatsLeft = payload.length()-currentIndex;
 
         while( whatsLeft >= (72-(1 + nl.length())) ) {
-            sb.append(" ").append(payload.substring(currentIndex, currentIndex + (72 - (1 + nl.length())))).append(nl);
+            sb.append(" ").append(payload, currentIndex, currentIndex + (72 - (1 + nl.length()))).append(nl);
             whatsLeft -= (72-(1 + nl.length()));
             currentIndex += (72-(1+nl.length()));
         }

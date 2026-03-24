@@ -26,8 +26,9 @@ import com.aspect.snoop.util.SimpleFileFilter;
 import com.aspect.snoop.util.UIUtil;
 import javassist.ClassPath;
 import javassist.ClassPool;
-import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -42,7 +43,7 @@ import java.util.List;
 
 public class NewProcessInfoView extends javax.swing.JDialog {
 
-    private static final Logger logger = Logger.getLogger(NewProcessInfoView.class);
+    private static final Logger logger = LoggerFactory.getLogger(NewProcessInfoView.class);
     private static final String userDir = System.getProperty("user.dir");
 
     public static boolean quitResolving;
@@ -490,7 +491,7 @@ public class NewProcessInfoView extends javax.swing.JDialog {
                     classpath.addEntry(new ClasspathEntry(selectedFile.getAbsolutePath(),entry));
                 } catch (MalformedURLException ex) {
                     UIUtil.showErrorMessage(this, "Failed to add classpath entry: " + cp);
-                    logger.error("Error adding to classpath: " + cp, ex);
+                    logger.error("Error adding to classpath: {}", cp, ex);
                 }
             } else if ( selectedFile.isDirectory() ) {
                 FileFilter jarFilter = new FileFilter() {
@@ -508,7 +509,7 @@ public class NewProcessInfoView extends javax.swing.JDialog {
                             classpath.addEntry(new ClasspathEntry(file.getAbsolutePath(),entry));
                         } catch (MalformedURLException ex) {
                             UIUtil.showErrorMessage(this, "Failed to add classpath entry: " + cp);
-                            logger.error("Error adding to classpath: " + cp, ex);
+                            logger.error("Error adding to classpath: {}", cp, ex);
                         }
                     }
                 }
@@ -591,7 +592,7 @@ public class NewProcessInfoView extends javax.swing.JDialog {
             try {
                 pool.appendClassPath(entry.getStringEntry());
             } catch(Exception e) {
-                logger.error(e);
+                logger.error("Failed to append classpath entry", e);
             }
         }
 
@@ -601,7 +602,7 @@ public class NewProcessInfoView extends javax.swing.JDialog {
         searchMainMethodsView.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 String selectedClass = (String) e.getSource();
-                logger.trace("Setting program's main class to: " + selectedClass);
+                logger.trace("Setting program's main class to: {}", selectedClass);
                 jLabelMainClass.setText(selectedClass);
             }
         });

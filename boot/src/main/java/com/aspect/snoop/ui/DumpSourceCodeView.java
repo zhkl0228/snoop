@@ -56,11 +56,7 @@ public class DumpSourceCodeView extends javax.swing.JDialog {
         this.urls = new ArrayList<URL>();
 
         for(URL u : mgr.getCodeSourceURLs()) {
-            boolean matched = false;
-            for(String snoopLib : AgentJarCreator.jarsToNotBootClasspath) {
-                if ( u.getFile().endsWith(snoopLib) )
-                    matched = true;
-            }
+            boolean matched = AgentJarCreator.matchesArtifact(u.getFile());
             if(!matched)
                 urls.add(u);
         }
