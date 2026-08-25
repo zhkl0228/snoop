@@ -39,7 +39,6 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
 import com.aspect.snoop.SnoopSession;
@@ -47,6 +46,8 @@ import com.aspect.snoop.util.ClasspathUtil;
 import com.aspect.snoop.util.UIUtil;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sun.jvmstat.monitor.HostIdentifier;
 import sun.jvmstat.monitor.MonitorException;
 import sun.jvmstat.monitor.MonitoredHost;
@@ -56,7 +57,7 @@ import sun.jvmstat.monitor.VmIdentifier;
 
 public class ChooseProcessView extends javax.swing.JDialog {
 
-    private static final Logger logger = Logger.getLogger(ChooseProcessView.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChooseProcessView.class);
 
     private int pid;
     private String mainClass;
@@ -470,14 +471,8 @@ public class ChooseProcessView extends javax.swing.JDialog {
 
                 String currentPid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
                 
-                logger.debug("loadProcesses jvmid=" + jvmid +
-                		", jvmArgs=" + jvmArgs +
-                		", longPathsMainClass=" + longPathsMainClass +
-                		", mainArgs=" + mainArgs +
-                		", commandLine=" + commandLine +
-                		", vmVersion=" + vmVersion +
-                		", mainClass=" + mainClass +
-                		", currentPid=" + currentPid);
+                logger.debug("loadProcesses jvmid={}, jvmArgs={}, longPathsMainClass={}, mainArgs={}, commandLine={}, vmVersion={}, mainClass={}, currentPid={}",
+                		jvmid, jvmArgs, longPathsMainClass, mainArgs, commandLine, vmVersion, mainClass, currentPid);
 
                 /*if ( ! currentPid.equals(desc.getId()) ) {
                     vmds.add(desc);
@@ -487,10 +482,10 @@ public class ChooseProcessView extends javax.swing.JDialog {
                 monitoredHost.detach(vm);
             }
         } catch (MonitorException e) {
-            logger.error(e);
+            logger.error("Failed to load JVM processes", e);
         }
         
-        JVMDescriptor[] sorted = vmds.toArray(new JVMDescriptor[vmds.size()]);
+        JVMDescriptor[] sorted = vmds.toArray(new JVMDescriptor[0]);
         Arrays.sort(sorted);
       lstJavaProcesses.setListData(sorted);
     }

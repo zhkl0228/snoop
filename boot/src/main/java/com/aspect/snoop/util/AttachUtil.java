@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.log4j.Logger;
-
 /*
  * Copyright, Aspect Security, Inc.
  *
@@ -37,6 +35,8 @@ import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods for launching JVMs and using the Attach API.
@@ -45,7 +45,7 @@ import com.sun.tools.attach.VirtualMachine;
  */
 public class AttachUtil {
 
-    private static Logger logger = Logger.getLogger(AttachUtil.class);
+    private static Logger logger = LoggerFactory.getLogger(AttachUtil.class);
 
     public static void attachToVM() throws AttachNotSupportedException, IOException, AgentLoadException, AgentInitializationException, AgentCommunicationException {
         // Use the process id of this VM
@@ -67,7 +67,7 @@ public class AttachUtil {
         String libraryPath = System.getProperty("java.library.path");
         String agentArgs = agentJar.getClasspath() + "|0|" + SnoopSession.findLookAndFeel() + "|false|" +
         		(mainClass == null ? "" : mainClass) + '|' + pid + '|' + (libraryPath == null ? "" : libraryPath);
-        logger.debug("loadAgentInOtherVM agentArgs=" + agentArgs + ", libraryPath=" + libraryPath);
+        logger.debug("loadAgentInOtherVM agentArgs={}, libraryPath={}", agentArgs, libraryPath);
         vm.loadAgent(agentJar.getAgentJarPath(), agentArgs);
         vm.detach();
     }
@@ -162,7 +162,7 @@ public class AttachUtil {
                     Process p = Runtime.getRuntime().exec(fCommandArgs, null, new File(fWorkingDir));
                     JadUtil.doWaitFor(p);
                 } catch (IOException ex) { 
-                    logger.error(ex);
+                    logger.error("Failed to execute process", ex);
                 }
             }
         }.start();

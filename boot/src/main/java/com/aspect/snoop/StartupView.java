@@ -24,7 +24,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.SwingWorker;
 
-import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.FrameView;
 import org.jdesktop.application.SingleFrameApplication;
@@ -40,10 +39,12 @@ import com.aspect.snoop.util.UIUtil;
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StartupView extends FrameView {
 
-    private static final Logger logger = Logger.getLogger(StartupView.class);
+    private static final Logger logger = LoggerFactory.getLogger(StartupView.class);
 
     public StartupView(SingleFrameApplication app) {
         super(app);
@@ -227,22 +228,22 @@ public class StartupView extends FrameView {
                 	AgentJar agentJar = AgentJarCreator.createAgentJar(false);
                     String agentJarPath = agentJar.getAgentJarPath();
                     progressBar.setString("Attaching agent...");
-                    logger.info("Attaching to process ID " + pid + " with generated agent at " + agentJarPath);
+                    logger.info("Attaching to process ID {} with generated agent at {}", pid, agentJarPath);
                     AttachUtil.loadAgentInOtherVM(agentJar, Integer.toString(pid), mainClass);
                 } catch (AttachNotSupportedException ex) {
-                    logger.error(ex);
+                    logger.error("Targeted virtual machine does not support attaching", ex);
                     UIUtil.showErrorMessage(getFrame(), "Targeted virtual machine does not support attaching: " + ex.getMessage());
                 } catch (IOException ex) {
-                    logger.error(ex.getMessage(), ex);
+                    logger.error("Could not attach to new virtual machine due to I/O error", ex);
                     UIUtil.showErrorMessage(getFrame(), "Could not attach to new virtual machine due to I/O error: " + ex.getMessage());
                 } catch (AgentLoadException ex) {
-                    logger.error(ex);
+                    logger.error("Could not load agent", ex);
                     UIUtil.showErrorMessage(getFrame(), "Could not load agent: " + ex.getMessage());
                 } catch (AgentInitializationException ex) {
-                    logger.error(ex.getMessage(), ex);
+                    logger.error("Could not initialize agent", ex);
                     UIUtil.showErrorMessage(getFrame(), "Could not initialize agent: " + ex.getMessage());
                 } catch (AgentCommunicationException ex) {
-                    logger.error(ex);
+                    logger.error("Could not communicate with agent", ex);
                     UIUtil.showErrorMessage(getFrame(), "Could not communicate with agent. It's possible that this process has already been attached to once.");
                 }
 
@@ -283,16 +284,16 @@ public class StartupView extends FrameView {
                 	AgentJar agentJar = AgentJarCreator.createAgentJar(false);
                     String agentJarPath = agentJar.getAgentJarPath();
                     progressBar.setString("Starting process with agent...");
-                    logger.info("Starting new process with generated agent at " + agentJarPath);
+                    logger.info("Starting new process with generated agent at {}", agentJarPath);
                     AttachUtil.launchInNewVM(agentJar, session);
                 } catch (AttachNotSupportedException ex) {
-                    logger.error(ex);
+                    logger.error("Targeted virtual machine does not support attaching", ex);
                     UIUtil.showErrorMessage(getFrame(), "Targeted virtual machine does not support attaching: " + ex.getMessage());
                 } catch (IOException ex) {
-                    logger.error(ex);
+                    logger.error("Could not start new virtual machine due to I/O error", ex);
                     UIUtil.showErrorMessage(getFrame(), "Could not attach to new virtual machine due to I/O error: " + ex.getMessage());
                 } catch (AgentCommunicationException ex) {
-                    logger.error(ex);
+                    logger.error("Could not communicate with agent", ex);
                     UIUtil.showErrorMessage(getFrame(), "Could not communicate with agent. It's possible that this process has already been attached to once.");
                 }
 

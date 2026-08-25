@@ -28,7 +28,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.apache.log4j.Logger;
 import org.jdesktop.application.Action;
 
 import com.aspect.snoop.util.ReflectionUtil;
@@ -36,10 +35,12 @@ import com.aspect.snoop.util.ReflectionUtil;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SearchMainMethodsView extends javax.swing.JDialog {
 
-    private static final Logger logger = Logger.getLogger(SearchMainMethodsView.class);
+    private static final Logger logger = LoggerFactory.getLogger(SearchMainMethodsView.class);
 
     List<ChangeListener> changeListeners = new Vector<ChangeListener>();
 
@@ -53,7 +54,7 @@ public class SearchMainMethodsView extends javax.swing.JDialog {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     int index = lstSearchMainClasses.locationToIndex(e.getPoint());
-                    logger.trace("Double clicked on Item " + index);
+                    logger.trace("Double clicked on Item {}", index);
                     select();
                 }
             }
@@ -69,7 +70,7 @@ public class SearchMainMethodsView extends javax.swing.JDialog {
                 if (ReflectionUtil.hasMainClass(c,pool))
                     list.addElement(clazz);
             } catch (NotFoundException e) {
-                logger.warn(e);
+                logger.warn("Class not found while searching main methods", e);
             }
         }
 
